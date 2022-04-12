@@ -22,6 +22,8 @@
 		"algorithm": "cpp",
 		"functional": "cpp",
 		"locale": "cpp",
-		"__config": "cpp"
+		"__config": "cpp",
+		"__nullptr": "cpp",
+		"type_traits": "cpp"
 	}
 }
