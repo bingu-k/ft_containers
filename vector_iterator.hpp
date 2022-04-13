@@ -2,11 +2,12 @@
 # define VECTOR_ITERATOR_HPP
 
 # include "iterator.hpp"
+# include "utils.hpp"
 
 namespace ft
 {
 	template <typename T>
-	class vector_iterator : public ft::iterator<ft::random_access_iterator_tag, T>
+	class vector_iterator
 	{
 	public:
 		// Typedef Member types
@@ -93,45 +94,54 @@ namespace ft
 	template <typename T>
 	bool	operator==(const ft::vector_iterator<T>& lhs, const ft::vector_iterator<T>& rhs)
 	{ return (*lhs == *rhs) };
+
 	template <class iter1, class iter2>
 	bool	operator!=(const ft::vector_iterator<iter1>& lhs, const ft::vector_iterator<iter2>& rhs)
 	{ return (*lhs != *rhs) };
 	template <typename T>
 	bool	operator!=(const ft::vector_iterator<T>& lhs, const ft::vector_iterator<T>& rhs)
 	{ return (*lhs != *rhs) };
+
 	template <class iter1, class iter2>
 	bool	operator>(const ft::vector_iterator<iter1>& lhs, const ft::vector_iterator<iter2>& rhs)
 	{ return (*lhs > *rhs) };
 	template <typename T>
 	bool	operator>(const ft::vector_iterator<T>& lhs, const ft::vector_iterator<T>& rhs)
 	{ return (*lhs > *rhs) };
+
 	template <class iter1, class iter2>
 	bool	operator<(const ft::vector_iterator<iter1>& lhs, const ft::vector_iterator<iter2>& rhs)
 	{ return (*lhs < *rhs) };
 	template <typename T>
 	bool	operator<(const ft::vector_iterator<T>& lhs, const ft::vector_iterator<T>& rhs)
 	{ return (*lhs < *rhs) };
+
 	template <class iter1, class iter2>
 	bool	operator>=(const ft::vector_iterator<iter1>& lhs, const ft::vector_iterator<iter2>& rhs)
 	{ return (*lhs >= *rhs) };
 	template <typename T>
 	bool	operator>=(const ft::vector_iterator<T>& lhs, const ft::vector_iterator<T>& rhs)
 	{ return (*lhs >= *rhs) };
+
 	template <class iter1, class iter2>
 	bool	operator<(const ft::vector_iterator<iter1>& lhs, const ft::vector_iterator<iter2>& rhs)
 	{ return (*lhs <= *rhs) };
 	template <typename T>
 	bool	operator<(const ft::vector_iterator<T>& lhs, const ft::vector_iterator<T>& rhs)
 	{ return (*lhs <= *rhs) };
+
 	template <typename T>
 	typename ft::vector_iterator<T>::difference_type
 	operator+(typename ft::vector_iterator<T>::difference_type n, typename ft::vector_iterator<T>& rhs)
 	{ return (n + &(*rhs)); };
+
 	template <class iter1, class iter2>
-	bool	operator-(const ft::vector_iterator<iter1>& lhs, const ft::vector_iterator<iter2>& rhs)
+	typename ft::vector_iterator<iter1>::difference_type
+	operator-(const ft::vector_iterator<iter1>& lhs, const ft::vector_iterator<iter2>& rhs)
 	{ return (*lhs - *rhs) };
 	template <typename T>
-	bool	operator-(const ft::vector_iterator<T>& lhs, const ft::vector_iterator<T>& rhs)
+	typename ft::vector_iterator<T>::difference_type
+	operator-(const ft::vector_iterator<T>& lhs, const ft::vector_iterator<T>& rhs)
 	{ return (*lhs - *rhs) };
 }
 
