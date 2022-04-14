@@ -1,6 +1,9 @@
 #ifndef UTILS_HPP
 # define UTILS_HPP
 
+# include <iostream>
+# include <exception>
+
 namespace ft
 {
 	// enable_if :	템플릿의 특수화로 true가 첫 템플릿으로 들어왔을 때, 
@@ -12,10 +15,7 @@ namespace ft
 	// is_integral :	해당하는 자료형(정수형)이 아니라면 false
 	template <class T>
 	struct is_integral_status
-	{
-		typedef T type;
-		static const bool	value_type = false;
-	};
+	{ static const bool	value_type = false; };
 	template <>
 	struct is_integral_status<bool>
 	{ static const bool	value_type = true; };
@@ -63,7 +63,7 @@ namespace ft
 	{ static const bool	value_type = true; };
 
 	template <typename T>
-	struct	is_integral : public is_integral_type<T> {};
+	struct	is_integral : public is_integral_status<T> {};
 
 	// equal :	모든 1의 인덱스에 따라 1의 내부값와 2의 내부값이 같아야 한다.
 	//			1의 size <= 2의 size
@@ -158,13 +158,24 @@ namespace ft
 	};
 	template <class InputIter1, class InputIter2>
 	bool lexicographical_compare (InputIter1 first1, InputIter1 last1,
-                                InputIter2 first2, InputIter2 last2);
+                                InputIter2 first2, InputIter2 last2)
 	{
 		typedef typename	iterator::traits<InputIter1>::value_type v1;
 		typedef typename	iterator::traits<InputIter2>::value_type v2;
 		return (lexicographical_compare (InputIter1 first1, InputIter1 last1,
                                 InputIter2 first2, InputIter2 last2, less<v1, v2>()););
 	};
+
+	// error class
+	class invalid_iter : public std::exception
+	{
+	public:
+		invalid_iter(void) throw() {};
+		virtual ~invalid_iter() throw() {};
+		virtual const char* what() const throw()
+		{ return ("It's invaild Iterator tag"); };
+	};
+	
 }
 
 #endif
