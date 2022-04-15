@@ -39,6 +39,8 @@ namespace ft
 						const allocator_type& alloc = allocator_type())
 		: _alloc(alloc), _begin(0), _end(0), _end_cap(0)
 		{
+			if (n < 0)
+				throw(std::length_error("vector"));
 			_begin = _alloc.allocate(n);
 			_end = _begin;
 			_end_cap = _begin + n;
@@ -60,8 +62,6 @@ namespace ft
 				, typename ft::enable_if<!ft::is_integral<InputIter>, InputIter>::type isIter = InputIter())
 		: _alloc(alloc), _begin(0), _end(0), _end_cap(0)
 		{
-			if (ft::is_iter_tag(typename ft::iterator_traits<InputIter>::iterator_category)::value)
-				throw (ft::invalid_iter());
 			difference_type	n = ft::distance(first, last);
 			_begin = _alloc.allocate(n);
 			_end = _begin;
@@ -81,6 +81,7 @@ namespace ft
 			difference_type						cap = x.capacity();
 			difference_type						size = x.size();
 			ft::vector<value_type>::iterator	temp = x.begin();
+
 			_begin = _alloc.allocate(cap);
 			_end = _begin;
 			_end_cap = _begin + cap;
@@ -144,28 +145,119 @@ namespace ft
 		// const_reverse_iterator	rend() const { return (); };
 
 		// Capacity
-		// size_type size() const;
-		// size_type max_size() const;
-		// void resize (size_type n, value_type val = value_type());
-		// size_type capacity() const;
-		// bool empty() const;
-		// void reserve (size_type n);
+		size_type		size(void) const { return (static_cast<size_type>(_end - _begin);); };
+		size_type		max_size(void) const { return (_alloc.max_size();); };
+		// 2의 지수승으로 커진다.
+		// 원래의 size보다 n이 클때,
+			// val이 없으면 원래 존재하는 컨테이너 이후부터 0으로 채운다.
+			// val이 있으면 원래 존재하는 컨테이너 이후부터 val으로 채운다.
+		// 원래의 size보다 n이 작을때,
+			// size가 n으로 될 수 있게 destroy해주고 end를 옮겨준다.
+		void			resize (size_type n, value_type val = value_type())
+		{
+			if (n < 0 || n > max_size())
+				throw(std::length_error("allocator<T>::allocate(size_t n) 'n' exceeds maximum supported size"));
+			else if (n < size())
+			{}
+			
+		};
+		size_type		capacity(void) const { return (_end_cap - _begin); };
+		bool			empty(void) const { return (_begin == _end); };
+		void			reserve (size_type n)
+		{
+			if (n < 0 || n > max_size())
+				throw(std::length_error("allocator<T>::allocate(size_t n) 'n' exceeds maximum supported size"));
+			else if (n > capacity())
+			{
+				pointer		prev_begin = _begin;
+				pointer		prev_end = _end;
+				size_type	prev_size = size();
+				size_type	prev_cap = capacity();
+
+				_begin = _alloc.allocate(n);
+				_end = _begin;
+				_end_cap = _begin + n;
+				while (prev_begin != prev_end)
+				{
+					_alloc.construct(_end, *prev_begin);
+					_end++;
+					prev_begin++;
+				}
+				_alloc.deallocate(prev_begin - prev_size, prev_cap);
+			}
+		}
 
 		// Element access
-		// reference operator[] (size_type n);
-		// const_reference operator[] (size_type n) const;
-		// reference at (size_type n);
-		// const_reference at (size_type n) const;
-		// reference front();
-		// const_reference front() const;
-		// reference back();
-		// const_reference back() const;
+		reference		operator[] (size_type n) { return (*(_begin + n)); };
+		const_reference	operator[] (size_type n) const { return (*(_begin + n)); };
+		reference		at (size_type n)
+		{
+			if (n > size())
+				throw(std::out_of_range("vector"));
+			return (*(begin + n));
+		};
+		const_reference	at (size_type n) const
+		{
+			if (n > size())
+				throw(std::out_of_range("vector"));
+			return (*(begin + n));
+		};
+		reference		front(void) { return (*_begin); };
+		const_reference	front(void) const { return (*_begin); };
+		reference		back(void) { return (*_end); };
+		const_reference	back(void) const { return (*_end); };
 
 		// Modifiers
-		// template <class InputIterator>
-		// void assign (InputIterator first, InputIterator last);
-		// void assign (size_type n, const value_type& val);
+		template <class InputIterator>
+		void assign		(InputIterator first, InputIterator last
+						, typename ft::enable_if<!ft::is_integral<InputIter>, InputIter>::type isIter = InputIter())
+		{
+			size_type	n = static_cast<size_type>(ft::distance(first, end));
+			pointer		prev_iter = _begin;
+			pointer		prev_cap = capacity();
+
+			while (prev_iter != _end)
+				_alloc.destroy(prev_iter++);
+			if (capacity() < n)
+			{
+				_alloc.deallocate(_begin, capacity());
+				_begin = _alloc.allocate(n);
+				_end_cap = _begin;
+			}
+			_end = _begin;
+			while (first != last)
+			{
+				_alloc.construct(_end++, *first);
+				first++;
+			}
+		};
+		void assign		(size_type n, const value_type& val)
+		{
+			if (n < 0 || n > max_size())
+				throw(std::length_error("allocator<T>::allocate(size_t n) 'n' exceeds maximum supported size"));
+			else
+			{
+				pointer	prev_begin = _begin;
+				pointer	prev_end = _end;
+				pointer	prev_size = size();
+				pointer	prev_cap = capacity();
+
+
+				while (prev_begin != prev_end)
+					_alloc.destroy(prev_begin++);
+				if (prev_cap < n)
+				{
+					_alloc.deallocate(_begin, prev_cap);
+					_begin = _alloc.allocate(n);
+					_end_cap = _begin + n;
+				}
+				_end = _begin;
+				for (int i = 0; i < n; i++)
+					_alloc.construct(_end++, val);
+			}
+		};
 		// void push_back (const value_type& val);
+		// 초기값은 0, 추가되면 1, 계속 추가되면 2의 지수승으로 커진다.
 		// void pop_back();
 		// iterator insert (iterator position, const value_type& val);
 		// void insert (iterator position, size_type n, const value_type& val);
@@ -177,7 +269,7 @@ namespace ft
 		// void clear();
 
 		// Allocator
-		// allocator_type get_allocator() const;
+		allocator_type	get_allocator() const { return (_alloc); };
 	};
 	// Non-member function overloading
 		// Relational Operators

@@ -165,17 +165,6 @@ namespace ft
 		return (lexicographical_compare (InputIter1 first1, InputIter1 last1,
                                 InputIter2 first2, InputIter2 last2, less<v1, v2>()););
 	};
-
-	// error class
-	class invalid_iter : public std::exception
-	{
-	public:
-		invalid_iter(void) throw() {};
-		virtual ~invalid_iter() throw() {};
-		virtual const char* what() const throw()
-		{ return ("It's invaild Iterator tag"); };
-	};
-	
 }
 
 #endif
