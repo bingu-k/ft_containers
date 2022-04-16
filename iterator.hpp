@@ -62,7 +62,6 @@ namespace ft
 	struct is_iter_tag<ft::output_iterator_tag>
 	{ static const bool	value = false; };
 
-
 	// advance
 	template <class InputIterator, class Distance>
 	void	do_advance(InputIterator& it, Distance n, ft::input_iterator_tag)

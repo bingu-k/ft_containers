@@ -174,9 +174,15 @@ int	main()
 	// 		std::cout << element << " -> ";
 	// 	std::cout << "end" << std::endl;
 	// }
-	{
+	/*{
 		std::vector<int>	a;
 		std::vector<int>	b(15, 1);
+		std::cout << "capacity\t: " << a.capacity() << std::endl;
+		a.resize(0);
+		std::cout << "capacity\t: " << a.capacity() << std::endl;
+		std::cout << "size\t:" << b.size() << ", capacity\t: " << b.capacity() << std::endl;
+		b.push_back(1);
+		std::cout << "size\t:" << b.size() << ", capacity\t: " << b.capacity() << std::endl;
 		for (int i = 1; i < 11; i++)
 			a.push_back(i * 10);
 		std::cout << "a vector\t, size\t:" << a.size() << ", capacity\t: " << a.capacity() << std::endl;
@@ -197,6 +203,82 @@ int	main()
 		for (const auto &element : b)
 			std::cout << element << " -> ";
 		std::cout << "end" << std::endl;
+	}*/
+	try
+	{
+		std::cout << "-------------중간-------------" << std::endl;
+		std::vector<int>	a(10, 1);
+		std::vector<int>::iterator	t = a.begin() + 3;
+		std::cout << "size\t:" << a.size() << ", capacity\t: " << a.capacity() << std::endl;
+		for (const auto &element : a)
+			std::cout << element << " -> ";
+		std::cout << "end" << std::endl;
+		a.insert(t, 2);
+		std::cout << "size\t:" << a.size() << ", capacity\t: " << a.capacity() << std::endl;
+		for (const auto &element : a)
+			std::cout << element << " -> ";
+		std::cout << "end" << std::endl;
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+	}
+	try
+	{
+		std::cout << "-------------음수-------------" << std::endl;
+		std::vector<int>	a(10, 1);
+		std::vector<int>::iterator	t = a.begin() - 3;
+		std::cout << "size\t:" << a.size() << ", capacity\t: " << a.capacity() << std::endl;
+		for (const auto &element : a)
+			std::cout << element << " -> ";
+		std::cout << "end" << std::endl;
+		a.insert(t, 2);
+		std::cout << "size\t:" << a.size() << ", capacity\t: " << a.capacity() << std::endl;
+		for (const auto &element : a)
+			std::cout << element << " -> ";
+		std::cout << "end" << std::endl;
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+	}
+	try
+	{
+		std::cout << "-------------넘어서-------------" << std::endl;
+		std::vector<int>	a(10, 1);
+		std::vector<int>::iterator	t = a.begin() + 13;
+		std::cout << "size\t:" << a.size() << ", capacity\t: " << a.capacity() << std::endl;
+		for (const auto &element : a)
+			std::cout << element << " -> ";
+		std::cout << "end" << std::endl;
+		a.insert(t, 2);
+		std::cout << "size\t:" << a.size() << ", capacity\t: " << a.capacity() << std::endl;
+		for (const auto &element : a)
+			std::cout << element << " -> ";
+		std::cout << "end" << std::endl;
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+	}
+	try
+	{
+		std::cout << "-------------더 넘어서-------------" << std::endl;
+		std::vector<int>	a(10, 1);
+		std::vector<int>::iterator	t = a.begin() + 23;
+		std::cout << "size\t:" << a.size() << ", capacity\t: " << a.capacity() << std::endl;
+		for (const auto &element : a)
+			std::cout << element << " -> ";
+		std::cout << "end" << std::endl;
+		a.insert(t, 2);
+		std::cout << "size\t:" << a.size() << ", capacity\t: " << a.capacity() << std::endl;
+		for (const auto &element : a)
+			std::cout << element << " -> ";
+		std::cout << "end" << std::endl;
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
 	}
 	return (0);
 }

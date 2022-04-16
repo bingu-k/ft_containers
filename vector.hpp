@@ -59,7 +59,7 @@ namespace ft
 		// vector의 iterator는 random access iterator로 output iterator이외는 전부 변환 가능하다.
 		template <class InputIter>
 		vector (InputIter first, InputIter last, const allocator_type& alloc = allocator_type()
-				, typename ft::enable_if<!ft::is_integral<InputIter>, InputIter>::type isIter = InputIter())
+				, typename ft::enable_if<!ft::is_integral<InputIter>::value_type, InputIter>::type isIter = InputIter())
 		: _alloc(alloc), _begin(0), _end(0), _end_cap(0)
 		{
 			difference_type	n = ft::distance(first, last);
@@ -147,22 +147,53 @@ namespace ft
 		// Capacity
 		size_type		size(void) const { return (static_cast<size_type>(_end - _begin);); };
 		size_type		max_size(void) const { return (_alloc.max_size();); };
-		// 2의 지수승으로 커진다.
-		// 원래의 size보다 n이 클때,
-			// val이 없으면 원래 존재하는 컨테이너 이후부터 0으로 채운다.
-			// val이 있으면 원래 존재하는 컨테이너 이후부터 val으로 채운다.
-		// 원래의 size보다 n이 작을때,
-			// size가 n으로 될 수 있게 destroy해주고 end를 옮겨준다.
+
+		// 동작 : 현재 vector의 size를 재조정해준다.
+		// 에러(n)
+			// 음수, max_size보다 크다	: length_error
+			// 현재 size보다 작다		: begin + n부터 end까지 삭제 후 end를 begin + n으로 재지정
+			// 현재 size와 같다			: 아무 동작 하지 않는다.
+			// 현재 size보다 크다		: capacity를 바꿔준다. 즉, 재할당 후 복사
 		void			resize (size_type n, value_type val = value_type())
 		{
 			if (n < 0 || n > max_size())
-				throw(std::length_error("allocator<T>::allocate(size_t n) 'n' exceeds maximum supported size"));
+				throw(std::length_error("vector"));
+			else if (n > size())
+			{
+				size_type	_size = size();
+				if (_size * 2 < n)
+					_size = n;
+				pointer		change_begin = _alloc.allocate(_size);
+				pointer		change_end = change_begin;
+				size_type	prev_size = size();
+				while (_begin != _end)
+				{
+					_alloc.construct(change_end++, *_begin);
+					_begin++;
+				}
+				while (prev_size++ != n)
+					_alloc.construct(change_end++, val);
+				_begin = change_begin;
+				_end = change_end;
+				_end_cap = change_begin + _size;
+			}
 			else if (n < size())
-			{}
-			
+			{
+				pointer	remove_container = _begin + n;
+				while (remove_container != _end)
+					_alloc.destroy(remove_container++);
+				_end = _begin + n;
+			}
 		};
+
 		size_type		capacity(void) const { return (_end_cap - _begin); };
 		bool			empty(void) const { return (_begin == _end); };
+
+		// 동작 : vector의 capacity를 변경시켜준다.
+		// 예외 (n)
+			// 음수, max_size보다 크다		: length_error
+			// 현재 size보다 작거나 같다	  : 아무 동작 하지 않는다.
+			// 현재 size보다 크다			: capacity를 바꿔준다. 즉, 재할당 후 복사
 		void			reserve (size_type n)
 		{
 			if (n < 0 || n > max_size())
@@ -190,18 +221,20 @@ namespace ft
 		// Element access
 		reference		operator[] (size_type n) { return (*(_begin + n)); };
 		const_reference	operator[] (size_type n) const { return (*(_begin + n)); };
-		reference		at (size_type n)
+
+		reference		at(size_type n)
 		{
 			if (n > size())
 				throw(std::out_of_range("vector"));
 			return (*(begin + n));
 		};
-		const_reference	at (size_type n) const
+		const_reference	at(size_type n) const
 		{
 			if (n > size())
 				throw(std::out_of_range("vector"));
 			return (*(begin + n));
 		};
+
 		reference		front(void) { return (*_begin); };
 		const_reference	front(void) const { return (*_begin); };
 		reference		back(void) { return (*_end); };
@@ -209,7 +242,7 @@ namespace ft
 
 		// Modifiers
 		template <class InputIterator>
-		void assign		(InputIterator first, InputIterator last
+		void	assign(InputIterator first, InputIterator last
 						, typename ft::enable_if<!ft::is_integral<InputIter>, InputIter>::type isIter = InputIter())
 		{
 			size_type	n = static_cast<size_type>(ft::distance(first, end));
@@ -231,7 +264,7 @@ namespace ft
 				first++;
 			}
 		};
-		void assign		(size_type n, const value_type& val)
+		void	assign(size_type n, const value_type& val)
 		{
 			if (n < 0 || n > max_size())
 				throw(std::length_error("allocator<T>::allocate(size_t n) 'n' exceeds maximum supported size"));
@@ -256,10 +289,30 @@ namespace ft
 					_alloc.construct(_end++, val);
 			}
 		};
-		// void push_back (const value_type& val);
+
 		// 초기값은 0, 추가되면 1, 계속 추가되면 2의 지수승으로 커진다.
-		// void pop_back();
-		// iterator insert (iterator position, const value_type& val);
+		void	push_back(const value_type& val)
+		{
+			if (_end == _end_cap)
+				resize(size() * 2);
+			_alloc.construct(_end++, val);
+		};
+
+		void pop_back(void) { _alloc.destroy(_end--) };
+
+		// 동작 : 해당 위치에 val을 추가한다. capacity를 넘어갈 경우 재할당.
+		// 예외(position)
+			// begin보다 작은 위치	  : 뭔 행동이야 이건.....
+			// begin과 end 사이 	: position부터 end까지 한 칸씩 뒤로 밀고, position에 val를 넣는다.
+			// end 보다 크다		 : capacity를 넘어가면 capacity * 2만큼 재할당 해주고 position에 val를 넣는다.
+			//						 근데 재할당해준 capacity의 범위를 넘어가도 position에 val를 넣어줌...?
+			// max_size보다 크다	 : begin에 val를 넣어주고 한 칸씩 뒤로 민다.
+		iterator	insert(iterator position, const value_type& val);
+		{
+			pointer	pos = &(*position);
+			if (_end == _end_cap)
+				resize(capacity() * 2);
+		}
 		// void insert (iterator position, size_type n, const value_type& val);
 		// template <class InputIterator>
 		// void insert (iterator position, InputIterator first, InputIterator last);
