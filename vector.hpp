@@ -3,6 +3,7 @@
 
 # include <memory>
 # include "vector_iterator.hpp"
+# include "reverse_iterator.hpp"
 
 namespace ft
 {
@@ -18,8 +19,8 @@ namespace ft
 		typedef typename allocator_type::const_pointer		const_pointer;
 		typedef ft::vector_iterator<T>						iterator;
 		typedef ft::vector_iterator<const T>				const_iterator;
-		// reverse_iterator
-		// const_reverse_iterator
+		typedef ft::reverse_iterator<T>						reverse_iterator;
+		typedef ft::reverse_iterator<const T>				const_reverse_iterator;
 		typedef typename allocator_type::difference_type	difference_type;
 		typedef typename allocator_type::size_type			size_type;
 
@@ -78,20 +79,8 @@ namespace ft
 		vector (const vector& x)
 		: _alloc(x._alloc), _begin(0), _end(0), _end_cap(0)
 		{
-			difference_type						cap = x.capacity();
-			difference_type						size = x.size();
-			ft::vector<value_type>::iterator	temp = x.begin();
-
-			_begin = _alloc.allocate(cap);
-			_end = _begin;
-			_end_cap = _begin + cap;
-			while (size < 0)
-			{
-				_alloc.construct(_end, *temp);
-				_end++;
-				temp++;
-			}
-			_alloc.construct(_end++, *temp);
+			_begin = _alloc.allocate(x.capacity());
+			this->insert(_begin, x.begin(), x.end());
 		};
 
 		// vector (vector& x)
@@ -101,7 +90,7 @@ namespace ft
 			if (this->capacity != 0)
 			{
 				this->clear();
-				this->_alloc.deallocate(this->_begin, this->capacity);
+				this->_alloc.deallocate(this->_begin, this->capacity());
 			}
 		};
 
@@ -110,24 +99,8 @@ namespace ft
 		{
 			if (this != &x)
 			{
-				if (this->capacity != 0)
-				{
-					this->clear();
-					this->_alloc.deallocate(this->_begin, this->capacity);
-				}
-				difference_type						cap = x.capacity();
-				difference_type						size = x.size();
-				ft::vector<value_type>::iterator	temp = x.begin();
-				_begin = _alloc.allocate(cap);
-				_end = _begin;
-				_end_cap = _begin + cap;
-				while (size < 0)
-				{
-					_alloc.construct(_end, *temp);
-					_end++;
-					temp++;
-				}
-				_alloc.construct(_end++, *temp);
+				_begin = _alloc.allocate(x.capacity());
+				this->insert(_begin, x.begin(), x.end());
 			}
 			return (*this);
 		}
@@ -160,12 +133,11 @@ namespace ft
 				throw(std::length_error("vector"));
 			else if (n > size())
 			{
-				size_type	_size = size();
-				if (_size * 2 < n)
-					_size = n;
+				size_type	_size = (size() * 2 < n ? n : size());
 				pointer		change_begin = _alloc.allocate(_size);
 				pointer		change_end = change_begin;
 				size_type	prev_size = size();
+
 				while (_begin != _end)
 				{
 					_alloc.construct(change_end++, *_begin);
@@ -173,6 +145,8 @@ namespace ft
 				}
 				while (prev_size++ != n)
 					_alloc.construct(change_end++, val);
+				this->clear();
+				_alloc.deallocate(_begin, capacity());
 				_begin = change_begin;
 				_end = change_end;
 				_end_cap = change_begin + _size;
@@ -180,6 +154,7 @@ namespace ft
 			else if (n < size())
 			{
 				pointer	remove_container = _begin + n;
+
 				while (remove_container != _end)
 					_alloc.destroy(remove_container++);
 				_end = _begin + n;
@@ -210,8 +185,7 @@ namespace ft
 				_end_cap = _begin + n;
 				while (prev_begin != prev_end)
 				{
-					_alloc.construct(_end, *prev_begin);
-					_end++;
+					_alloc.construct(_end++, *prev_begin);
 					prev_begin++;
 				}
 				_alloc.deallocate(prev_begin - prev_size, prev_cap);
@@ -245,7 +219,7 @@ namespace ft
 		void	assign(InputIterator first, InputIterator last
 						, typename ft::enable_if<!ft::is_integral<InputIter>, InputIter>::type isIter = InputIter())
 		{
-			size_type	n = static_cast<size_type>(ft::distance(first, end));
+			size_type	n = static_cast<size_type>(ft::distance(first, last));
 			pointer		prev_iter = _begin;
 			pointer		prev_cap = capacity();
 
@@ -293,7 +267,7 @@ namespace ft
 		// 초기값은 0, 추가되면 1, 계속 추가되면 2의 지수승으로 커진다.
 		void	push_back(const value_type& val)
 		{
-			if (_end == _end_cap)
+			if (size() == capacity())
 				resize(size() * 2);
 			_alloc.construct(_end++, val);
 		};
@@ -302,50 +276,190 @@ namespace ft
 
 		// 동작 : 해당 위치에 val을 추가한다. capacity를 넘어갈 경우 재할당.
 		// 예외(position)
-			// begin보다 작은 위치	  : 뭔 행동이야 이건.....
-			// begin과 end 사이 	: position부터 end까지 한 칸씩 뒤로 밀고, position에 val를 넣는다.
-			// end 보다 크다		 : capacity를 넘어가면 capacity * 2만큼 재할당 해주고 position에 val를 넣는다.
-			//						 근데 재할당해준 capacity의 범위를 넘어가도 position에 val를 넣어줌...?
+			// begin보다 작은 위치	  : 뭔 행동이야 이건.....(아직까진 정의되지 않은 행동으로 생각.)
+			// begin과 end사이 		: position부터 end까지 한 칸씩 뒤로 밀고, position에 val를 넣는다.
+			// end보다 크다		 	 : capacity를 넘어가면 capacity * 2만큼 재할당 해주고 position에 val를 넣는다.
+			//						 근데 재할당해준 capacity의 범위를 넘어가도 position에 val를 넣어줌...?(정의되지 않은 행동으로 생각.)
 			// max_size보다 크다	 : begin에 val를 넣어주고 한 칸씩 뒤로 민다.
 		iterator	insert(iterator position, const value_type& val);
 		{
 			pointer	pos = &(*position);
-			if (_end == _end_cap)
+			if (size() == capacity())				// 재할당 해야할 때.
 				resize(capacity() * 2);
+			if (position - begin() > max_size())	// max_size보다 클 때.
+				pos = _begin;
+			pointer	mid_pos = _end;
+			int		tmp		= 0;
+			while (mid_pos != pos)
+			{
+				tmp = *(mid_pos - 1);
+				_alloc.destroy(mid_pos - 1);
+				_alloc.construct(mid_pos--, tmp);
+			}
+			_end = _end + 1;
+			_alloc.construct(pos, val);
+			return (pos);
 		}
-		// void insert (iterator position, size_type n, const value_type& val);
-		// template <class InputIterator>
-		// void insert (iterator position, InputIterator first, InputIterator last);
-		// iterator erase (iterator position);
-		// iterator erase (iterator first, iterator last);
-		// void swap (vector& x);
-		// void clear();
+		void insert (iterator position, size_type n, const value_type& val)
+		{
+			pointer	pos = &(*position);
+			if (size() + n > capacity())			// 재할당 해야할 때.
+				resize(capacity() * 2);
+			if (position - begin() > max_size())	// max_size보다 클 때.
+				pos = _begin;
+			pointer	mid_pos = _end;
+			int		tmp		= 0;
+			while (mid_pos != pos)
+			{
+				tmp = *(mid_pos - n);
+				_alloc.destroy(mid_pos - n);
+				_alloc.construct(mid_pos--, tmp);
+			}
+			_end = _end + n;
+			for (int i = 0; i < n; i++)
+				_alloc.construct(pos++, val);
+		}
+		template <class InputIter>
+		void insert (iterator position, InputIter first, InputIter last
+					, typename ft::enable_if<!ft::is_integral<InputIter>, InputIter>::type isIter = InputIter())
+		{
+			size_type	n = last - first;
+			pointer		pos = &(*position);
+			if (size() + n > capacity())
+				resize(capacity() * 2);
+			if (position - begin() > max_size())
+				pos = _begin;
+			if (size() != 0)
+			{
+				pointer	mid_pos = _end;
+				int		tmp = 0;
+				while (mid_pos != pos)
+				{
+					tmp = *(mid_pos - n);
+					_alloc.destroy(mid_pos - n);
+					_alloc.construct(mid_pos--, tmp);
+				}
+				_end = _end + n;
+			}
+			while (first != last)
+			{
+				_alloc.construct(pos++, *first);
+				first++;
+			}
+		}
+
+		iterator erase (iterator position)
+		{
+			pointer	move_element = position + 1;
+
+			while (move_element != _end)
+			{
+				_alloc.destroy(move_element - 1);
+				_alloc.construct(move_element - 1, move_element);
+			}
+			_end = move_element - 1;
+			return (position);
+		}
+		iterator erase (iterator first, iterator last);
+		{
+			size_type	n = last - first;
+			pointer		move_element = position + n;
+
+			while (move_element != _end)
+			{
+				_alloc.destroy(move_element - n);
+				_alloc.construct(move_element - n, move_element);
+			}
+			_end = move_element - n;
+			return (position);
+		}
+
+	private:
+		void	swap(pointer a, pointer b)
+		{
+			pointer	tmp = a;
+			a = b;
+			b = tmp;
+		}
+
+	public:
+		void	swap(vector& x)
+		{
+			swap(_begin, x._begin);
+			swap(_end, x._end);
+			swap(_end_cap, x._end_cap);
+		}
+
+		void	clear()
+		{
+			pointer	remove_container = _begin + 1;
+
+			while (remove_container != _end)
+				_alloc.destroy(remove_container - 1);
+			_begin = 0;
+			_end = 0;
+		}
 
 		// Allocator
 		allocator_type	get_allocator() const { return (_alloc); };
 	};
 	// Non-member function overloading
 		// Relational Operators
-	// template <class T, class Alloc>
-	// bool operator== (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+	template <class T, class Alloc>
+	bool operator== (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
+	{
+		typename ft::vector_iterator<T>	lhs_container = lhs.begin();
+		typename ft::vector_iterator<T>	rhs_container = rhs.begin();
 
-	// template <class T, class Alloc>
-	// bool operator!= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+		while (lhs_container != lhs.end())			// lhs 끝까지 돌리고
+		{
+			if (rhs_container == rhs.end())			// rhs가 끝에 도달하면 false 
+				return (false);
+			else if (lhs_container++ != rhs_container++)	// lhs와 rhs가 다르면 false
+				return (false);
+		}
+		if (rhs_container == rhs.end())				// lhs와 rhs가 끝까지 갔다면 true
+			return (true);
+		return (false);								// lhs는 끝까지 갔는데 rhs가 끝까지 못갔다면 false
+	};
 
-	// template <class T, class Alloc>
-	// bool operator<  (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+	template <class T, class Alloc>
+	bool operator!= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
+	{ return (!(lhs == rhs)); };
 
-	// template <class T, class Alloc>
-	// bool operator<= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+	template <class T, class Alloc>
+	bool operator<  (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
+	{
+		typename ft::vector_iterator<T>	lhs_container = lhs.begin();
+		typename ft::vector_iterator<T>	rhs_container = rhs.begin();
 
-	// template <class T, class Alloc>
-	// bool operator>  (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+		while (lhs_container != lhs.end())			// lhs 끝까지 돌리고
+		{
+			if (rhs_container == rhs.end())			// rhs가 끝에 도달하면 false 
+				return (false);
+			if (lhs_container++ >= rhs_container++)	// lhs가 rhs보다 크거나 같으면 false
+				return (false);
+		}
+		if (rhs_container == rhs.end())				// lhs와 rhs가 끝까지 갔다면 false
+			return (false);
+		return (true);								// lhs는 끝까지 갔는데 rhs가 끝까지 못갔다면 true
+	};
 
-	// template <class T, class Alloc>
-	// bool operator>= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+	template <class T, class Alloc>
+	bool operator<= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
+	{ return ((lhs < rhs) || (lhs == rhs)); };
 
-	// template <class T, class Alloc>
-	// void swap (vector<T,Alloc>& x, vector<T,Alloc>& y);
+	template <class T, class Alloc>
+	bool operator>  (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
+	{ return (!(lhs <= rhs)); };
+
+	template <class T, class Alloc>
+	bool operator>= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
+	{ return (!(lhs < rhs)); };
+
+	template <class T, class Alloc>
+	void swap (vector<T,Alloc>& x, vector<T,Alloc>& y)
+	{ x.swap(y); }
 }
 
 

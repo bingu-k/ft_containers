@@ -1,5 +1,5 @@
 #ifndef ITERATOR_HPP
-# define ITERARTOR_HPP
+# define ITERATOR_HPP
 
 # include <cstddef>
 
@@ -77,7 +77,7 @@ namespace ft
 			for (; n > 0; --n)
 				++it;
 		else
-			for (; n <>> 0; ++n)
+			for (; n < 0; ++n)
 				--it;
 	}
 
@@ -87,7 +87,7 @@ namespace ft
 
 	template <class InputIterator, class Distance>
 	void	advance(InputIterator& it, Distance n)
-	{ do_advance(it, n, typename ft::iterator_traits<it>::iterator_category); }
+	{ do_advance(it, n, typename ft::iterator_traits<InputIterator>::iterator_category()); }
 
 	// distance
 	template <class InputIterator>
@@ -109,7 +109,7 @@ namespace ft
 	template <class InputIterator>
 	typename iterator_traits<InputIterator>::difference_type
 	distance (InputIterator first, InputIterator last)
-	{ return (do_distance(first, last, typename ft::iterator_traits<InputIterator>::iterator_category)); }
+	{ return (do_distance(first, last, typename ft::iterator_traits<InputIterator>::iterator_category())); }
 }
 
 #endif

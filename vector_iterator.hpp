@@ -13,11 +13,11 @@ namespace ft
 		// Typedef Member types
 		typedef T												iterator_type;
 		typedef ft::iterator<ft::random_access_iterator_tag, T>	iter;
-		typedef iter::value_type								value_type;
-		typedef iter::difference_type							difference_type;
-		typedef iter::pointer									pointer;
-		typedef iter::reference									reference;
-		typedef iter::iterator_category							iterator_category;
+		typedef typename iter::value_type						value_type;
+		typedef typename iter::difference_type					difference_type;
+		typedef typename iter::pointer							pointer;
+		typedef typename iter::reference						reference;
+		typedef typename iter::iterator_category				iterator_category;
 	private:
 		// Element
 		pointer	_elem;
@@ -90,45 +90,45 @@ namespace ft
 	// Operator overloading
 	template <class iter1, class iter2>
 	bool	operator==(const ft::vector_iterator<iter1>& lhs, const ft::vector_iterator<iter2>& rhs)
-	{ return (*lhs == *rhs) };
+	{ return (*lhs == *rhs); };
 	template <typename T>
 	bool	operator==(const ft::vector_iterator<T>& lhs, const ft::vector_iterator<T>& rhs)
-	{ return (*lhs == *rhs) };
+	{ return (*lhs == *rhs); };
 
 	template <class iter1, class iter2>
 	bool	operator!=(const ft::vector_iterator<iter1>& lhs, const ft::vector_iterator<iter2>& rhs)
-	{ return (*lhs != *rhs) };
+	{ return (*lhs != *rhs); };
 	template <typename T>
 	bool	operator!=(const ft::vector_iterator<T>& lhs, const ft::vector_iterator<T>& rhs)
-	{ return (*lhs != *rhs) };
+	{ return (*lhs != *rhs); };
 
 	template <class iter1, class iter2>
 	bool	operator>(const ft::vector_iterator<iter1>& lhs, const ft::vector_iterator<iter2>& rhs)
-	{ return (*lhs > *rhs) };
+	{ return (*lhs > *rhs); };
 	template <typename T>
 	bool	operator>(const ft::vector_iterator<T>& lhs, const ft::vector_iterator<T>& rhs)
-	{ return (*lhs > *rhs) };
+	{ return (*lhs > *rhs); };
 
 	template <class iter1, class iter2>
 	bool	operator<(const ft::vector_iterator<iter1>& lhs, const ft::vector_iterator<iter2>& rhs)
-	{ return (*lhs < *rhs) };
+	{ return (*lhs < *rhs); };
 	template <typename T>
 	bool	operator<(const ft::vector_iterator<T>& lhs, const ft::vector_iterator<T>& rhs)
-	{ return (*lhs < *rhs) };
+	{ return (*lhs < *rhs); };
 
 	template <class iter1, class iter2>
 	bool	operator>=(const ft::vector_iterator<iter1>& lhs, const ft::vector_iterator<iter2>& rhs)
-	{ return (*lhs >= *rhs) };
+	{ return (*lhs >= *rhs); };
 	template <typename T>
 	bool	operator>=(const ft::vector_iterator<T>& lhs, const ft::vector_iterator<T>& rhs)
-	{ return (*lhs >= *rhs) };
+	{ return (*lhs >= *rhs); };
 
 	template <class iter1, class iter2>
 	bool	operator<(const ft::vector_iterator<iter1>& lhs, const ft::vector_iterator<iter2>& rhs)
-	{ return (*lhs <= *rhs) };
+	{ return (*lhs <= *rhs); };
 	template <typename T>
 	bool	operator<(const ft::vector_iterator<T>& lhs, const ft::vector_iterator<T>& rhs)
-	{ return (*lhs <= *rhs) };
+	{ return (*lhs <= *rhs); };
 
 	template <typename T>
 	typename ft::vector_iterator<T>::difference_type
@@ -138,11 +138,11 @@ namespace ft
 	template <class iter1, class iter2>
 	typename ft::vector_iterator<iter1>::difference_type
 	operator-(const ft::vector_iterator<iter1>& lhs, const ft::vector_iterator<iter2>& rhs)
-	{ return (*lhs - *rhs) };
+	{ return (*lhs - *rhs); };
 	template <typename T>
 	typename ft::vector_iterator<T>::difference_type
 	operator-(const ft::vector_iterator<T>& lhs, const ft::vector_iterator<T>& rhs)
-	{ return (*lhs - *rhs) };
+	{ return (*lhs - *rhs); };
 }
 
 #endif

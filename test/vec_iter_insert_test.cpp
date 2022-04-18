@@ -4,6 +4,10 @@
 
 int	main(void)
 {
+	std::vector<int>	b(10, 2);
+    for (const auto &element : b)
+		std::cout << element << " -> ";
+    std::cout << "end" << std::endl;
 	{
 		try
 		{
@@ -14,7 +18,8 @@ int	main(void)
 			for (const auto &element : a)
 				std::cout << element << " -> ";
 			std::cout << "end" << std::endl;
-			std::cout << "a.insert(t, 2) return value\t: " << *(a.insert(t, 2)) << std::endl;
+			a.insert(t, b.begin(), b.end());
+			std::cout << "a.insert(t, b.begin(), b.end())\t: " << std::endl;
 			std::cout << "size\t:" << a.size() << ", capacity\t: " << a.capacity() << std::endl;
 			for (const auto &element : a)
 				std::cout << element << " -> ";
@@ -30,12 +35,13 @@ int	main(void)
 		{
 			std::cout << "-------------음수-------------" << std::endl;
 			std::vector<int>	a(10, 1);
-			std::vector<int>::iterator	t = a.begin() - 1;
+			std::vector<int>::iterator	t = a.begin() - 2;
 			std::cout << "size\t:" << a.size() << ", capacity\t: " << a.capacity() << std::endl;
 			for (const auto &element : a)
 				std::cout << element << " -> ";
 			std::cout << "end" << std::endl;
-			std::cout << "a.insert(t, 2) return value\t: " << *(a.insert(t, 2)) << std::endl;
+			a.insert(t, b.begin(), b.end());
+			std::cout << "a.insert(t, b.begin(), b.end())\t: " << std::endl;
 			std::cout << "size\t:" << a.size() << ", capacity\t: " << a.capacity() << std::endl;
 			for (const auto &element : a)
 				std::cout << element << " -> ";
@@ -56,7 +62,8 @@ int	main(void)
 			for (const auto &element : a)
 				std::cout << element << " -> ";
 			std::cout << "end" << std::endl;
-			std::cout << "a.insert(t, 2) return value\t: " << *(a.insert(t, 2)) << std::endl;
+			a.insert(t, b.begin(), b.end());
+			std::cout << "a.insert(t, b.begin(), b.end())\t: " << std::endl;
 			std::cout << "size\t:" << a.size() << ", capacity\t: " << a.capacity() << std::endl;
 			for (const auto &element : a)
 				std::cout << element << " -> ";
@@ -77,13 +84,14 @@ int	main(void)
 			for (const auto &element : a)
 				std::cout << element << " -> ";
 			std::cout << "end" << std::endl;
-			std::cout << "a.insert(t, 2) return value\t: " << *(a.insert(t, 2)) << std::endl;
+			a.insert(t, b.begin(), b.end());
+			std::cout << "a.insert(t, b.begin(), b.end())\t: " << std::endl;
 			std::cout << "size\t:" << a.size() << ", capacity\t: " << a.capacity() << std::endl;
 			for (const auto &element : a)
 				std::cout << element << " -> ";
 			std::cout << "end" << std::endl;
-			for (int i = 0; i < 6; i++)
-			std::cout << "a.at(" << 10 + i << ")\t: " << a.at(10 + i) << std::endl;
+			// for (int i = 0; i < 6; i++)
+			//     std::cout << "a.at(" << 10 + i << ")\t: " << a.at(10 + i) << std::endl;
 		}
 		catch(const std::exception& e)
 		{
@@ -100,13 +108,14 @@ int	main(void)
 			for (const auto &element : a)
 				std::cout << element << " -> ";
 			std::cout << "end" << std::endl;
-			std::cout << "a.insert(t, 2) return value\t: " << *(a.insert(t, 2)) << std::endl;
+			a.insert(t, b.begin(), b.end());
+			std::cout << "a.insert(t, b.begin(), b.end())\t: " << std::endl;
 			std::cout << "size\t:" << a.size() << ", capacity\t: " << a.capacity() << std::endl;
 			for (const auto &element : a)
 				std::cout << element << " -> ";
 			std::cout << "end" << std::endl;
-			for (int i = 0; i < 16; i++)
-			std::cout << "a.at(" << 10 + i << ")\t: " << a.at(10 + i) << std::endl;
+			// for (int i = 0; i < 16; i++)
+			//     std::cout << "a.at(" << 10 + i << ")\t: " << a.at(10 + i) << std::endl;
 		}
 		catch(const std::exception& e)
 		{

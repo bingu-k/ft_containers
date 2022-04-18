@@ -68,7 +68,8 @@
 		"tuple": "cpp",
 		"typeinfo": "cpp",
 		"utility": "cpp",
-		"forward_list": "cpp"
+		"forward_list": "cpp",
+		"__functional_03": "cpp"
 	},
 	"C_Cpp.dimInactiveRegions": false
 }
