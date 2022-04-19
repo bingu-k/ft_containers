@@ -88,7 +88,7 @@ int main(void)
 			std::cerr << e.what() << '\n';
 		}
 	}
-	{
+	/*{
 		try
 		{
 			std::vector<int>	a;
@@ -100,6 +100,27 @@ int main(void)
 				std::cout << elem << " -> ";
 			std::cout << "end" << std::endl;
 			std::cout << "erase position(115) and return iterator value\t: " << *a.erase(a.begin() + 115) << std::endl;
+			for (const auto& elem : a)
+				std::cout << elem << " -> ";
+			std::cout << "end" << std::endl;
+		}
+		catch(const std::exception& e)
+		{
+			std::cerr << e.what() << '\n';
+		}
+	}*/
+	{
+		try
+		{
+			std::vector<int>	a;
+			for (int i = 0; i < 10; i++)
+				a.push_back(i);
+			std::cout << "-------------내부-------------" << std::endl;
+			std::cout << "origin vector<int> a" << std::endl;
+			for (const auto& elem : a)
+				std::cout << elem << " -> ";
+			std::cout << "end" << std::endl;
+			std::cout << "erase position(3rd, 5th) and return iterator value\t: " << *a.erase(a.begin() + 3, a.begin() + 5) << std::endl;
 			for (const auto& elem : a)
 				std::cout << elem << " -> ";
 			std::cout << "end" << std::endl;
