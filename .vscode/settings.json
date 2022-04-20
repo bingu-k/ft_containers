@@ -69,7 +69,14 @@
 		"typeinfo": "cpp",
 		"utility": "cpp",
 		"forward_list": "cpp",
-		"__functional_03": "cpp"
+		"__functional_03": "cpp",
+		"queue": "cpp",
+		"set": "cpp",
+		"csignal": "cpp",
+		"fstream": "cpp",
+		"iomanip": "cpp",
+		"numeric": "cpp",
+		"random": "cpp"
 	},
 	"C_Cpp.dimInactiveRegions": false
 }

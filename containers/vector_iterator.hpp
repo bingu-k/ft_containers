@@ -12,7 +12,7 @@ namespace ft
 	public:
 		// Typedef Member types
 		typedef T												iterator_type;
-		typedef ft::iterator<ft::random_access_iterator_tag, T>	iter;
+		typedef ft::iterator<random_access_iterator_tag(), T>	iter;
 		typedef typename iter::value_type						value_type;
 		typedef typename iter::difference_type					difference_type;
 		typedef typename iter::pointer							pointer;
@@ -60,7 +60,7 @@ namespace ft
 		{
 			vector_iterator	temp(*this);
 			++(*this);
-			return (*this);
+			return (temp);
 		};
 		vector_iterator	&operator--(void)
 		{
@@ -71,7 +71,7 @@ namespace ft
 		{
 			vector_iterator	temp(*this);
 			--(*this);
-			return (*this);
+			return (temp);
 		};
 		vector_iterator	operator+(difference_type n) const
 		{
@@ -80,13 +80,21 @@ namespace ft
 			return (temp);
 		};
 		vector_iterator	operator-(difference_type n) const
-		{ return (*this - n); };
+		{
+			vector_iterator	temp(*this);
+			temp -= n;
+			return (temp);
+		};
 		reference		operator*(void) const
 		{ return (*_elem); };
 		pointer			operator->(void) const
 		{ return (_elem); };
 		reference		operator[](difference_type n) const
 		{ return (*(_elem + n)); };
+
+		// TypeCast overloading
+		operator vector_iterator<const T> () const
+		{ return (vector_iterator<const T>(this->_elem)); }
 	};
 
 	// Operator overloading
@@ -135,7 +143,7 @@ namespace ft
 	template <typename T>
 	typename ft::vector_iterator<T>::difference_type
 	operator+(typename ft::vector_iterator<T>::difference_type n, typename ft::vector_iterator<T>& rhs)
-	{ return (n + &(*rhs)); };
+	{ return (&(*rhs) + n); };
 
 	template <class iter1, class iter2>
 	typename ft::vector_iterator<iter1>::difference_type

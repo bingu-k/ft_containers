@@ -2,9 +2,22 @@
 # define UTILS_HPP
 
 # include <exception>
-
+# include <cstddef>
 namespace ft
 {
+	// m_nullptr
+	const class nullptr_t
+	{
+	public:
+		template <class T>
+		operator T*() const { return 0; }
+		template <class T, class U>
+		operator T U::*() const { return 0; }
+	private:
+		void	operator&() const;
+	} m_nullptr;
+	
+
 	// enable_if :	템플릿의 특수화로 true가 첫 템플릿으로 들어왔을 때, 
 	template <bool Cond, class T = void>
 	struct enable_if {};
@@ -99,17 +112,21 @@ namespace ft
 	bool equal (InputIter1 first1, InputIter1 last1,
 				InputIter2 first2, BinaryPredicate pred)
 	{
-		for (; first1 != last1; ++first1, (void) ++first2)
+		while (first1 != last1)
+		{
 			if (!pred(*first1, *first2))
 				return (false);
+			++first1;
+			++first2;
+		}
 		return (true);
 	};
 	template <class InputIter1, class InputIter2>
 	bool equal (InputIter1 first1, InputIter1 last1, InputIter2 first2)
 	{
-		typedef typename	ft::iterator_traits<InputIter1>::value_type v1;
-		typedef typename	ft::iterator_traits<InputIter2>::value_type v2;
-		return (equal(first1, last1, first2, is_equal<v1, v2>()));
+		typedef typename	iterator_traits<InputIter1>::value_type v1;
+		typedef typename	iterator_traits<InputIter2>::value_type v2;
+		return (ft::equal(first1, last1, first2, ft::is_equal<v1, v2>()));
 	};
 
 	// lexicographical_compare :	모든 1의 인덱스에 따라 1의 내부값이 2의 내부값보다 작아야 함.
@@ -159,26 +176,10 @@ namespace ft
 	bool lexicographical_compare (InputIter1 first1, InputIter1 last1,
                                 InputIter2 first2, InputIter2 last2)
 	{
-		typedef typename	ft::iterator_traits<InputIter1>::value_type	v1;
-		typedef typename	ft::iterator_traits<InputIter2>::value_type	v2;
-		return ( lexicographical_compare(first1, last1, first2, last2, less<v1, v2>()) );
+		typedef typename	iterator_traits<InputIter1>::value_type	v1;
+		typedef typename	iterator_traits<InputIter2>::value_type	v2;
+		return ( ft::lexicographical_compare(first1, last1, first2, last2, ft::less<v1, v2>()) );
 	};
-
-	// is_possible_RI
-	template <class Iter_tag>
-	struct is_possible_RI_status
-	{ static const bool	value_type = false; };
-	template <>
-	struct is_possible_RI_status<class ft::random_access_iterator_tag()>
-	{ static const bool	value_type = true; };
-	template <>
-	struct is_possible_RI_status<class ft::bidirectional_iterator_tag()>
-	{ static const bool	value_type = true; };
-
-	template <class Iter>
-	struct is_possible_RI
-	: public is_possible_RI_status<typename ft::iterator_traits<Iter>::iterator_category>
-	{};
 }
 
 #endif

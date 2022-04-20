@@ -1,7 +1,7 @@
-#include "../containers/vector.hpp"
 #include <iostream>
+#include <vector>
 
-void    printSize(ft::vector<int> v, bool what)
+void    printSize(std::vector<int> v, bool what)
 {
     if (what == true)
     {
@@ -13,7 +13,7 @@ void    printSize(ft::vector<int> v, bool what)
     }
 }
 
-void	is_empty(ft::vector<int> const &vct)
+void	is_empty(std::vector<int> const &vct)
 {
 	std::cout << "is_empty: " << vct.empty() << std::endl;
 }
@@ -22,9 +22,9 @@ int main()
 {
     {
         const int start_size = 7;
-        ft::vector<int> vct(start_size, 20);
-        ft::vector<int> vct2;
-        ft::vector<int>::iterator it = vct.begin();
+        std::vector<int> vct(start_size, 20);
+        std::vector<int> vct2;
+        std::vector<int>::iterator it = vct.begin();
 
         for (int i = 2; i < start_size; ++i)
             it[i] = (start_size - i) * 3;

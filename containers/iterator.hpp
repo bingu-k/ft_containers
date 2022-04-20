@@ -30,7 +30,7 @@ namespace ft
 		typedef T										value_type;
 		typedef T*										pointer;
 		typedef T&										reference;
-		typedef ft::random_access_iterator_tag			iterator_category;
+		typedef random_access_iterator_tag				iterator_category;
 	};
 
 	template <class T>
@@ -40,7 +40,7 @@ namespace ft
 		typedef T										value_type;
 		typedef const T*								pointer;
 		typedef const T&								reference;
-		typedef ft::random_access_iterator_tag			iterator_category;
+		typedef random_access_iterator_tag			iterator_category;
 	};
 
 	// iterator
@@ -59,19 +59,19 @@ namespace ft
 	struct is_iter_tag
 	{ static const bool	value = true; };
 	template <>
-	struct is_iter_tag<ft::output_iterator_tag>
+	struct is_iter_tag<output_iterator_tag>
 	{ static const bool	value = false; };
 
 	// advance
 	template <class InputIterator, class Distance>
-	void	do_advance(InputIterator& it, Distance n, ft::input_iterator_tag)
+	void	do_advance(InputIterator& it, Distance n, input_iterator_tag())
 	{
 		for (; n > 0; --n)
 			++it;
 	}
 
 	template <class InputIterator, class Distance>
-	void	do_advance(InputIterator& it, Distance n, ft::bidirectional_iterator_tag)
+	void	do_advance(InputIterator& it, Distance n, bidirectional_iterator_tag)
 	{
 		if (n >= 0)
 			for (; n > 0; --n)
@@ -82,17 +82,38 @@ namespace ft
 	}
 
 	template <class InputIterator, class Distance>
-	void	do_advance(InputIterator& it, Distance n, ft::random_access_iterator_tag)
+	void	do_advance(InputIterator& it, Distance n, random_access_iterator_tag)
 	{ it += n; }
 
 	template <class InputIterator, class Distance>
 	void	advance(InputIterator& it, Distance n)
-	{ do_advance(it, n, typename ft::iterator_traits<InputIterator>::iterator_category()); }
+	{ do_advance(it, n, typename iterator_traits<InputIterator>::iterator_category()); }
 
 	// distance
+	// template <class InputIterator>
+	// typename iterator_traits<InputIterator>::difference_type
+	// do_distance (InputIterator first, InputIterator last, input_iterator_tag)
+	// {
+	// 	typename iterator_traits<InputIterator>::difference_type res(0);
+
+	// 	for (; first != last; ++first)
+	// 		++res;
+	// 	return (res);
+	// }
+
+	// template <class InputIterator>
+	// typename iterator_traits<InputIterator>::difference_type
+	// do_distance (InputIterator first, InputIterator last, random_access_iterator_tag)
+	// { return (last - first);}
+
+	// template <class InputIterator>
+	// typename iterator_traits<InputIterator>::difference_type
+	// distance (InputIterator first, InputIterator last)
+	// { return (do_distance(first, last, typename iterator_traits<InputIterator>::iterator_category())); }
+	
 	template <class InputIterator>
 	typename iterator_traits<InputIterator>::difference_type
-	do_distance (InputIterator first, InputIterator last, ft::input_iterator_tag)
+	distance (InputIterator first, InputIterator last)
 	{
 		typename iterator_traits<InputIterator>::difference_type res(0);
 
@@ -100,16 +121,6 @@ namespace ft
 			++res;
 		return (res);
 	}
-
-	template <class InputIterator>
-	typename iterator_traits<InputIterator>::difference_type
-	do_distance (InputIterator first, InputIterator last, ft::random_access_iterator_tag)
-	{ return (last - first);}
-
-	template <class InputIterator>
-	typename iterator_traits<InputIterator>::difference_type
-	distance (InputIterator first, InputIterator last)
-	{ return (do_distance(first, last, typename ft::iterator_traits<InputIterator>::iterator_category())); }
 }
 
 #endif
