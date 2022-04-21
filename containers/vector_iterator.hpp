@@ -29,7 +29,7 @@ namespace ft
 		: _elem(elem) {};
 		vector_iterator(const vector_iterator &origin)
 		: _elem(origin.base()) {};
-		virtual ~vector_iterator(void)
+		~vector_iterator(void)
 		{};
 
 		pointer		base(void) const { return(_elem); };
@@ -59,7 +59,7 @@ namespace ft
 		vector_iterator	operator++(int)
 		{
 			vector_iterator	temp(*this);
-			++(*this);
+			++_elem;
 			return (temp);
 		};
 		vector_iterator	&operator--(void)
@@ -70,7 +70,7 @@ namespace ft
 		vector_iterator	operator--(int)
 		{
 			vector_iterator	temp(*this);
-			--(*this);
+			--_elem;
 			return (temp);
 		};
 		vector_iterator	operator+(difference_type n) const
@@ -141,9 +141,9 @@ namespace ft
 	{ return (lhs.base() <= rhs.base()); };
 
 	template <typename T>
-	typename ft::vector_iterator<T>::difference_type
+	typename ft::vector_iterator<T>
 	operator+(typename ft::vector_iterator<T>::difference_type n, typename ft::vector_iterator<T>& rhs)
-	{ return (&(*rhs) + n); };
+	{ return (rhs += n); };
 
 	template <class iter1, class iter2>
 	typename ft::vector_iterator<iter1>::difference_type

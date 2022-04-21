@@ -4,7 +4,6 @@
 # include <memory>
 # include "vector_iterator.hpp"
 # include "reverse_iterator.hpp"
-# include <iostream>
 
 namespace ft
 {
@@ -47,10 +46,7 @@ namespace ft
 			_end = _begin;
 			_end_cap = _begin + n;
 			while (n--)
-			{
-				_alloc.construct(_end, val);
-				_end++;
-			}
+				_alloc.construct(_end++, val);
 		};
 
 		// 위의 생성자와 구분하기 위해서 is_intergral을 사용하여 정수 자료형을 제외한다.(SFINAE)
@@ -68,12 +64,8 @@ namespace ft
 			_begin = _alloc.allocate(n);
 			_end = _begin;
 			_end_cap = _begin + n;
-			while (first != last)
-			{
-				_alloc.construct(_end, *first);
-				_end++;
-				first++;
-			}
+			while (n--)
+				_alloc.construct(_end++, *first++);
 		};
 
 		vector (const vector& x)
@@ -82,11 +74,8 @@ namespace ft
 
 		~vector()
 		{
-			if (this->capacity() != 0)
-			{
-				this->clear();
-				this->_alloc.deallocate(this->_begin, this->capacity());
-			}
+			this->clear();
+			this->_alloc.deallocate(this->_begin, this->capacity());
 		};
 
 		// Operator overloading
@@ -94,18 +83,16 @@ namespace ft
 		{
 			if (this != &x)
 			{
-				if (this->capacity() != 0)
-				{
-					this->clear();
-					this->_alloc.deallocate(this->_begin, this->capacity());
-					_end_cap = _begin;
-				}
-				reserve(x.capacity());
-				this->insert(begin(), x.begin(), x.end());
+				this->clear();
+				this->_alloc.deallocate(this->_begin, this->capacity());
+				_begin = 0;
+				_end = 0;
+				_end_cap = 0;
+				if (x.size() != 0)
+					this->insert(begin(), x.begin(), x.end());
 			}
 			return (*this);
 		}
-		// vector	&operator=(vector& x)
 		
 
 		// Iterators
@@ -134,11 +121,18 @@ namespace ft
 				throw(std::length_error("vector"));
 			else
 			{
+				size_type	change_cap = 0;
+				if (n < capacity())
+					change_cap = capacity();
+				else if (n < 2 * capacity())
+					change_cap = 2 * capacity();
+				else
+					change_cap = n;
 				size_type	idx = 0;
 				vector		res_vec(this->_alloc);
-				res_vec._begin = _alloc.allocate(n);
+				res_vec._begin = _alloc.allocate(change_cap);
 				res_vec._end = res_vec._begin;
-				res_vec._end_cap = res_vec._begin + n;
+				res_vec._end_cap = res_vec._begin + change_cap;
 				iterator	start = begin();
 				while (idx < n && start != end())
 				{
@@ -166,23 +160,21 @@ namespace ft
 				throw(std::length_error("allocator<T>::allocate(size_t n) 'n' exceeds maximum supported size"));
 			else if (n > capacity())
 			{
+				pointer		change_begin = _alloc.allocate(n);
+				pointer		change_end = change_begin;
+				pointer		change_end_cap = change_begin + n;
 				pointer		prev_begin = _begin;
-				pointer		prev_end = _end;
-				size_type	prev_size = size();
-				size_type	prev_cap = capacity();
-
-				_begin = _alloc.allocate(n);
-				_end = _begin;
-				_end_cap = _begin + n;
-				if (prev_size != 0)
+				if (size() != 0)
+					while (prev_begin != _end)
+						_alloc.construct(change_end++, *prev_begin++);
+				if (capacity() != 0)
 				{
-					while (prev_begin != prev_end)
-					{
-						_alloc.construct(_end++, *prev_begin);
-						prev_begin++;
-					}
-					_alloc.deallocate(prev_begin - prev_size, prev_cap);
+					clear();
+					_alloc.deallocate(_begin, capacity());
 				}
+				_begin = change_begin;
+				_end = change_end;
+				_end_cap = change_end_cap;
 			}
 		}
 
@@ -227,7 +219,8 @@ namespace ft
 					_end_cap = _begin + n;
 				}
 				_end = _begin;
-				insert(_begin, first, last);
+				while (first != last)
+					_alloc.construct(_end++, *first++);
 			}
 		};
 		void	assign(size_type n, const value_type& val)
@@ -244,7 +237,8 @@ namespace ft
 					_end_cap = _begin + n;
 				}
 				_end = _begin;
-				insert(_begin, n, val);
+				for (size_type i = 0; i < n; i++)
+					_alloc.construct(_end++, val);
 			}
 		};
 
@@ -256,7 +250,7 @@ namespace ft
 			_alloc.construct(_end++, val);
 		};
 
-		void pop_back(void) { _alloc.destroy(_end--); };
+		void	pop_back(void) { _alloc.destroy(_end--); };
 
 		// 동작 : 해당 위치에 val을 추가한다. capacity를 넘어갈 경우 재할당.
 		// 예외(position)
@@ -267,35 +261,68 @@ namespace ft
 			// max_size보다 크다	 : begin에 val를 넣어주고 한 칸씩 뒤로 민다.
 		iterator	insert(iterator position, const value_type& val)
 		{
-			size_type	res = position - begin();
-			insert(position, 1, val);
-			return (iterator(begin() + res));
+			size_type	curr_cap = 0;
+			if (size() == capacity())
+				curr_cap = 2 * capacity();
+			else if (capacity() == 0)
+				curr_cap = 1;
+			else
+				curr_cap = capacity();
+			pointer		change_begin = _alloc.allocate(curr_cap);
+			pointer		change_end = change_begin;
+			pointer		change_end_cap = change_begin + curr_cap;
+			pointer		start = _begin;
+			while (size() != 0 && start != &(*position))
+				_alloc.construct(change_end++, *start++);
+			pointer		res = change_end;
+			_alloc.construct(change_end++, val);
+			while (size() != 0 && start != _end)
+				_alloc.construct(change_end++, *start++);
+			this->clear();
+			_alloc.deallocate(_begin, capacity());
+			_begin = change_begin;
+			_end = change_end;
+			_end_cap = change_end_cap;
+			return (iterator(res));
 		};
-		void insert (iterator position, size_type n, const value_type& val)
+		void	insert(iterator position, size_type n, const value_type& val)
 		{
-			if (n > 0)
+			if (0 < n && n < max_size())
 			{
-				vector		res_vec(_alloc);
-				pointer		start = _begin;
-				pointer		stop = &(*position);
-				size_type	prev_size = size();
-
-				if (capacity() - size() < n)			// capacity 조정
+				size_type	curr_cap = 0;
+				if (capacity() <= n)
 				{
-					if (capacity() < n)
-						res_vec.reserve(capacity() + n);
+					if (size() + n >= 2 * capacity())
+						curr_cap = size() + n;
 					else
-						res_vec.reserve(2 * capacity());
+						curr_cap = 2 * capacity();
 				}
-				else
-					res_vec.reserve(capacity());
-				while (prev_size != 0 && start != stop)	// push element
-					res_vec.push_back(*start++);
+				else if (capacity() == 0)
+					curr_cap = n;
+				else	// (capacity() > n)
+				{
+					if (n + size() <= capacity())
+						curr_cap = capacity();
+					else
+						curr_cap = 2 * capacity();
+				}
+				pointer	change_begin = _alloc.allocate(curr_cap);
+				pointer	change_end = change_begin;
+				pointer	change_end_cap = change_begin + curr_cap;
+				pointer	start = _begin;
+				pointer	stop = &(*position);
+
+				while (size() != 0 && start != stop)
+					_alloc.construct(change_end++, *start++);
 				for (size_type i = 0; i < n; i++)
-					res_vec.push_back(val);
-				while (prev_size != 0 && start != _end)
-					res_vec.push_back(*start++);
-				this->swap(res_vec);
+					_alloc.construct(change_end++, val);
+				while (size() != 0 && start != _end)
+					_alloc.construct(change_end++, *start++);
+				this->clear();
+				_alloc.deallocate(_begin, capacity());
+				_begin = change_begin;
+				_end = change_end;
+				_end_cap = change_end_cap;
 			}
 		}
 		template <class InputIter>
@@ -303,29 +330,42 @@ namespace ft
 					, typename ft::enable_if<!ft::is_integral<InputIter>::value_type, InputIter>::type* = m_nullptr)
 		{
 			size_type	n = &(*last) - &(*first);
-			if (n > 0)
+			if (0 < n && n < max_size())
 			{
-				vector		res_vec(_alloc);
-				pointer		start = _begin;
-				pointer		stop = &(*position);
-				size_type	prev_size = size();
-
-				if (capacity() - size() < n)			// capacity 조정
+				size_type	curr_cap = 0;
+				if (capacity() <= n)
 				{
-					if (capacity() < n)
-						res_vec.reserve(capacity() + n);
+					if (size() + n >= 2 * capacity())
+						curr_cap = size() + n;
 					else
-						res_vec.reserve(2 * capacity());
+						curr_cap = 2 * capacity();
 				}
-				else
-					res_vec.reserve(capacity());
-				while (prev_size != 0 && start != stop)	// push element
-					res_vec.push_back(*start++);
+				else if (capacity() == 0)
+					curr_cap = n;
+				else	// (capacity() > n)
+				{
+					if (n + size() <= capacity())
+						curr_cap = capacity();
+					else
+						curr_cap = 2 * capacity();
+				}
+				pointer	change_begin = _alloc.allocate(curr_cap);
+				pointer	change_end = change_begin;
+				pointer	change_end_cap = change_begin + curr_cap;
+				pointer	start = this->_begin;
+				pointer	stop = &(*position);
+
+				while (size() != 0 && start != stop)
+					_alloc.construct(change_end++, *start++);
 				while (first != last)
-					res_vec.push_back(*first++);
-				while (prev_size != 0 && start != _end)
-					res_vec.push_back(*start++);
-				this->swap(res_vec);
+					_alloc.construct(change_end++, *first++);
+				while (size() != 0 && start != this->_end)
+					_alloc.construct(change_end++, *start++);
+				this->clear();
+				_alloc.deallocate(this->_begin, this->capacity());
+				this->_begin = change_begin;
+				this->_end = change_end;
+				this->_end_cap = change_end_cap;
 			}
 		}
 
@@ -358,7 +398,15 @@ namespace ft
 			return (iterator(_begin + res_size));
 		}
 
-	public:
+		// private:
+		// void	_swap(pointer &a, pointer &b)
+		// {
+		// 	pointer	temp = a;
+		// 	a = b;
+		// 	b = temp;
+		// }
+
+		// public:
 		void	swap(vector& x)
 		{
 			if (this == &x)
@@ -372,6 +420,9 @@ namespace ft
 			pointer			temp_end_cap = x._end_cap;
 			x._end_cap = this->_end_cap;
 			this->_end_cap = temp_end_cap;
+			// this->_swap(this->_begin, x._begin);
+			// this->_swap(this->_end, x._end);
+			// this->_swap(this->_end_cap, x._end_cap);
 			allocator_type	temp_alloc = x._alloc;
 			x._alloc = this->_alloc;
 			this->_alloc = temp_alloc;
@@ -379,8 +430,7 @@ namespace ft
 
 		void	clear()
 		{
-			size_type	n = size();
-			for (size_type idx = 0; idx < n; idx++)
+			while (_end != _begin)
 				_alloc.destroy(--_end);
 		}
 
