@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include "../vector.hpp"
+#include "../../containers/vector.hpp"
 #include <iterator>
 
 void    print_vec(std::vector<int>  &vec, std::string name)
@@ -23,7 +23,6 @@ void    print_vec(ft::vector<int>  &vec, std::string name)
 
 int main(void)
 {
-    std::distance
     std::vector<int>    vec1_std(7);
     std::vector<int>    vec2_std(4);
     std::vector<int>    vec3_std;

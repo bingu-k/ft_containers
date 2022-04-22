@@ -29,8 +29,6 @@ namespace ft
 		: _elem(elem) {};
 		vector_iterator(const vector_iterator &origin)
 		: _elem(origin.base()) {};
-		~vector_iterator(void)
-		{};
 
 		pointer		base(void) const { return(_elem); };
 

@@ -7,7 +7,7 @@ int	main(void)
 	std::vector<int>	v(30, 1);
 	std::vector<int>	res;
 
-	for (int i = 0; i < 40; i++)
+	for (int i = 0; i < 20; i++)
 	{
 		v.resize(s);
 		res.push_back(v.size());

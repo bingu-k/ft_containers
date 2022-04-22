@@ -45,14 +45,18 @@ int main()
         vct.reserve(3);
         printSize(vct, true);
         vct.resize(87);
+        printSize(vct, true);
         vct.resize(5);
         printSize(vct, true);
 
         is_empty(vct2);
         vct2 = vct;
         is_empty(vct2);
+		std::cerr << vct.capacity() << std::endl;
         vct.reserve(vct.capacity() + 1);
+		std::cerr << vct.capacity() << std::endl;
         printSize(vct, true);
+		std::cerr << vct.capacity() << std::endl;
         printSize(vct2, true);
 
         vct2.resize(0);

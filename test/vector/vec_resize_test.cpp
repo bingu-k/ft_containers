@@ -1,4 +1,4 @@
-#include "../containers/vector.hpp"
+#include "../../containers/vector.hpp"
 #include <iostream>
 
 void    printSize(ft::vector<int> v, bool what)
@@ -51,8 +51,11 @@ int main()
         is_empty(vct2);
         vct2 = vct;
         is_empty(vct2);
+		std::cerr << vct.capacity() << std::endl;
         vct.reserve(vct.capacity() + 1);
+		std::cerr << vct.capacity() << std::endl;
         printSize(vct, true);
+		std::cerr << vct.capacity() << std::endl;
         printSize(vct2, true);
 
         vct2.resize(0);
