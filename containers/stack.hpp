@@ -2,7 +2,7 @@
 # define STACK_HPP
 
 # include "vector.hpp"
-# include <stack>
+// # include <stack>
 
 namespace ft
 {
@@ -12,7 +12,7 @@ namespace ft
 	public:
 		// Typedef Member types
 		typedef T				value_type;
-		typedef vector<T>		container_type;
+		typedef Container		container_type;
 		typedef unsigned int	size_type;
 	private:
 		container_type	c;
@@ -34,6 +34,13 @@ namespace ft
 		{ return (c.back()); };
 		void				push(const value_type& val) { c.push_back(val); };
 		void				pop(void) { c.pop_back(); };
+		template <class _T, class _Container>
+		friend bool	operator==
+		(const stack<_T, _Container>& lhs, const stack<_T, _Container>& rhs);
+		template <class _T, class _Container>
+		friend bool	operator<
+		(const stack<_T, _Container>& lhs, const stack<_T, _Container>& rhs);
+	
 	};
 	template <class T, class Container>
 	bool	operator==(const stack<T,Container>& lhs, const stack<T,Container>& rhs)
@@ -41,7 +48,7 @@ namespace ft
 
 	template <class T, class Container>
 	bool	operator!=(const stack<T,Container>& lhs, const stack<T,Container>& rhs)
-	{ return (lhs.c != rhs.c); };
+	{ return !(lhs == rhs); };
 
 	template <class T, class Container>
 	bool	operator<(const stack<T,Container>& lhs, const stack<T,Container>& rhs)
@@ -49,15 +56,15 @@ namespace ft
 
 	template <class T, class Container>
 	bool	operator<=(const stack<T,Container>& lhs, const stack<T,Container>& rhs)
-	{ return (lhs.c <= rhs.c); };
+	{ return !(rhs < lhs); };
 	
 	template <class T, class Container>
 	bool	operator>(const stack<T,Container>& lhs, const stack<T,Container>& rhs)
-	{ return (lhs.c > rhs.c); };
+	{ return (rhs < lhs); };
 
 	template <class T, class Container>
 	bool	operator>=(const stack<T,Container>& lhs, const stack<T,Container>& rhs)
-	{ return (lhs.c >= rhs.c); };
+	{ return !(lhs < rhs); };
 }
 
 #endif

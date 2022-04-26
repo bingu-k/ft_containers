@@ -1,133 +1,64 @@
 #include <iostream>
 #include <vector>
+#include "../../containers/vector.hpp"
 #include <memory>
 
-int main(void)
+#define TESTED_TYPE std::string
+#define TESTED_NAMESPACE ft
+
+void    printSize(TESTED_NAMESPACE::vector<TESTED_TYPE> v)
 {
-	// {
-	// 	try
-	// 	{
-	// 		std::vector<int>	a;
-	// 		for (int i = 0; i < 10; i++)
-	// 			a.push_back(i);
-	// 		std::cout << "-------------더 음수-------------" << std::endl;
-	// 		std::cout << "origin vector<int> a" << std::endl;
-	// 		for (const auto& elem : a)
-	// 			std::cout << elem << " -> ";
-	// 		std::cout << "end" << std::endl;
-	// 		std::cout << "erase position(-2) and return iterator value\t: " << *a.erase(a.begin() - 9) << std::endl;
-	// 		for (const auto& elem : a)
-	// 			std::cout << elem << " -> ";
-	// 		std::cout << "end" << std::endl;
-	// 	}
-	// 	catch(const std::exception& e)
-	// 	{
-	// 		std::cerr << e.what() << '\n';
-	// 	}
-	// }
-	// {
-	// 	try
-	// 	{
-	// 		std::vector<int>	a;
-	// 		for (int i = 0; i < 10; i++)
-	// 			a.push_back(i);
-	// 		std::cout << "-------------음수-------------" << std::endl;
-	// 		std::cout << "origin vector<int> a" << std::endl;
-	// 		for (const auto& elem : a)
-	// 			std::cout << elem << " -> ";
-	// 		std::cout << "end" << std::endl;
-	// 		std::cout << "erase position(-1) and return iterator value\t: " << *a.erase(a.begin() - 1) << std::endl;
-	// 		for (const auto& elem : a)
-	// 			std::cout << elem << " -> ";
-	// 		std::cout << "end" << std::endl;
-	// 	}
-	// 	catch(const std::exception& e)
-	// 	{
-	// 		std::cerr << e.what() << '\n';
-	// 	}
-	// }
-	{
-		try
-		{
-			std::vector<int>	a;
-			for (int i = 0; i < 10; i++)
-				a.push_back(i);
-			std::cout << "-------------내부-------------" << std::endl;
-			std::cout << "origin vector<int> a" << std::endl;
-			for (const auto& elem : a)
-				std::cout << elem << " -> ";
-			std::cout << "end" << std::endl;
-			std::cout << "erase position(3) and return iterator value\t: " << *a.erase(a.begin() + 3) << std::endl;
-			for (const auto& elem : a)
-				std::cout << elem << " -> ";
-			std::cout << "end" << std::endl;
-		}
-		catch(const std::exception& e)
-		{
-			std::cerr << e.what() << '\n';
-		}
-	}
-	{
-		try
-		{
-			std::vector<int>	a;
-			for (int i = 0; i < 10; i++)
-				a.push_back(i);
-			std::cout << "-------------넘어감-------------" << std::endl;
-			std::cout << "origin vector<int> a" << std::endl;
-			for (const auto& elem : a)
-				std::cout << elem << " -> ";
-			std::cout << "end" << std::endl;
-			std::cout << "erase position(9) and return iterator value\t: " << *a.erase(a.begin() + 9) << std::endl;
-			for (const auto& elem : a)
-				std::cout << elem << " -> ";
-			std::cout << "end" << std::endl;
-		}
-		catch(const std::exception& e)
-		{
-			std::cerr << e.what() << '\n';
-		}
-	}
-	/*{
-		try
-		{
-			std::vector<int>	a;
-			for (int i = 0; i < 10; i++)
-				a.push_back(i);
-			std::cout << "-------------더 넘어감-------------" << std::endl;
-			std::cout << "origin vector<int> a" << std::endl;
-			for (const auto& elem : a)
-				std::cout << elem << " -> ";
-			std::cout << "end" << std::endl;
-			std::cout << "erase position(115) and return iterator value\t: " << *a.erase(a.begin() + 115) << std::endl;
-			for (const auto& elem : a)
-				std::cout << elem << " -> ";
-			std::cout << "end" << std::endl;
-		}
-		catch(const std::exception& e)
-		{
-			std::cerr << e.what() << '\n';
-		}
-	}*/
-	{
-		try
-		{
-			std::vector<int>	a;
-			for (int i = 0; i < 10; i++)
-				a.push_back(i);
-			std::cout << "-------------내부-------------" << std::endl;
-			std::cout << "origin vector<int> a" << std::endl;
-			for (const auto& elem : a)
-				std::cout << elem << " -> ";
-			std::cout << "end" << std::endl;
-			std::cout << "erase position(3rd, 5th) and return iterator value\t: " << *a.erase(a.begin() + 3, a.begin() + 5) << std::endl;
-			for (const auto& elem : a)
-				std::cout << elem << " -> ";
-			std::cout << "end" << std::endl;
-		}
-		catch(const std::exception& e)
-		{
-			std::cerr << e.what() << '\n';
-		}
-	}
+	std::cout << "size : " << v.size() << std::endl;
+	std::cout << "capacity : " << v.capacity() << std::endl;
+	for (const auto& e : v)
+		std::cout << e << " -> ";
+	std::cout << "end" << std::endl;
+}
+
+void    printSize(std::vector<TESTED_TYPE> v)
+{
+	std::cout << "size : " << v.size() << std::endl;
+	std::cout << "capacity : " << v.capacity() << std::endl;
+	for (const auto& e : v)
+		std::cout << e << " -> ";
+	std::cout << "end" << std::endl;
+}
+
+void	checkErase(TESTED_NAMESPACE::vector<TESTED_TYPE> const &vct,
+					TESTED_NAMESPACE::vector<TESTED_TYPE>::const_iterator const &it)
+{
+	static int i = 0;
+	std::cout << "[" << i++ << "] " << "erase: " << it - vct.begin() << std::endl;
+	printSize(vct);
+}
+
+int		main(void)
+{
+	TESTED_NAMESPACE::vector<TESTED_TYPE> vct(10);
+
+	for (unsigned long int i = 0; i < vct.size(); ++i)
+		vct[i] = std::string((vct.size() - i), i + 65);
+	printSize(vct);
+
+	checkErase(vct, vct.erase(vct.begin() + 2));
+
+	checkErase(vct, vct.erase(vct.begin()));
+	checkErase(vct, vct.erase(vct.end() - 1));
+
+	checkErase(vct, vct.erase(vct.begin(), vct.begin() + 3));
+	checkErase(vct, vct.erase(vct.end() - 3, vct.end() - 1));
+
+	vct.push_back("Hello");
+	vct.push_back("Hi there");
+	printSize(vct);
+	checkErase(vct, vct.erase(vct.end() - 3, vct.end()));
+
+	vct.push_back("ONE");
+	vct.push_back("TWO");
+	vct.push_back("THREE");
+	vct.push_back("FOUR");
+	printSize(vct);
+	checkErase(vct, vct.erase(vct.begin(), vct.end()));
+
+	return (0);
 }

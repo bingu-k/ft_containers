@@ -116,18 +116,6 @@ namespace ft
 				return (n + curr_size);
 		};
 
-		size_type	resize_choose_capacity(size_type curr_cap, size_type n)
-		{
-			if (curr_cap == 0)
-				return (n);
-			else if (n < curr_cap)
-				return (curr_cap);
-			else if (n < 2 * curr_cap)
-				return (n);
-			else
-				return (2 * curr_cap);
-		};
-
 		void	_swap(pointer &a, pointer &b)
 		{
 			pointer	temp = a;
@@ -212,12 +200,9 @@ namespace ft
 		{
 			if (n < 0 || n > max_size())
 				this->throw_length_error();
-			// if (n < size())
-			// 	erase(begin() + n, end());
-			// else if (n > size())
 			else
 			{
-				size_type	change_cap = n; //this->resize_choose_capacity(capacity(), n);
+				size_type	change_cap = n;
 				pointer		change_begin = this->__alloc().allocate(change_cap);
 				pointer		change_end  = change_begin;
 				pointer		change_end_cap = change_begin + change_cap;
@@ -310,7 +295,7 @@ namespace ft
 				reserve(capacity() == 0 ? 1 : 2 * capacity());
 			this->__alloc().construct(this->_end++, val);
 		};
-		void		pop_back(void) { this->__alloc().destroy(this->_end--); }
+		void		pop_back(void) { this->__alloc().destroy(this->_end--); };
 
 		iterator	insert(iterator position, const value_type& val)
 		{
