@@ -1,8 +1,8 @@
 #ifndef UTILS_HPP
 # define UTILS_HPP
 
-# include <exception>
 # include <cstddef>
+
 namespace ft
 {
 	// m_nullptr

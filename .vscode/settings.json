@@ -77,7 +77,8 @@
 		"iomanip": "cpp",
 		"numeric": "cpp",
 		"random": "cpp",
-		"filesystem": "cpp"
+		"filesystem": "cpp",
+		"__undef_macros": "cpp"
 	},
 	"C_Cpp.dimInactiveRegions": false
 }

@@ -1,184 +1,233 @@
 #ifndef RBTREE_HPP
 # define RBTREE_HPP
 
-#include <memory>
-#include "utils.hpp"
+# include <memory>
+# include <iostream>
+# include "utils.hpp"
+# include "pair.hpp"
 
 namespace ft
 {
-	enum color
+	// x로부터 하위 노드의 유효성 검사, black 갯수 확인.
+	template <class nodeptr>
+	unsigned	tree_sub_invariant(nodeptr x)
+	{
+		if (x == m_nullptr) // 리프노드에 도달했을때
+			return (1);
+		else if (x->_left != m_nullptr && x->_left->_parent != x)	// 유효성 검사
+			return (0);
+		else if (x->_right != m_nullptr && x->_right->_parent != x)	// 유효성 검사
+			return (0);
+		else if (x->_left == x->_right && x->_left != m_nullptr)	// 유효성 검사
+			return (0);
+		else if (!x->_is_black)	// 본인이 Red일 때, 자식노드도 Red일까?
+		{
+			if (x->_left && !x->_left->_is_black)
+				return (0);
+			if (x->_right && !x->_right->_is_black)
+				return (0);
+		}
+		// 재귀를 통한 자식의 black 갯수 확인.
+		unsigned	h = tree_sub_invariant(x->_left);
+		if (h == 0)
+			return (0);
+		if (h != tree_sub_invariant(x->_right))
+			return (0);
+		return (h + x->_is_black);
+	};
+
+	// root로부터 하위 노드의 유효성 검사.
+	template <class nodeptr>
+	bool	tree_invariant(nodeptr root)
+	{
+		if (root == m_nullptr)
+			return (true);
+		else if (root->_parent == m_nullptr)
+			return (false);
+		else if (!tree_is_left_child(root))
+			return (false);
+		else if (!root->_is_black)
+			return (false);
+		else
+			return (tree_sub_invariant(root) != 0);
+	};
+
+	template <class nodeptr>
+	inline nodeptr	tree_min(nodeptr x) _NOEXCEPT
+	{
+		while (x->_left != m_nullptr)
+			x = x->_left;
+		return (x);
+	};
+
+	template <class nodeptr>
+	inline nodeptr	tree_max(nodeptr x) _NOEXCEPT
+	{
+		while (x->_right != m_nullptr)
+			x = x->_right;
+		return (x);
+	};
+
+	template <class nodeptr>
+	inline nodeptr	tree_next(nodeptr x) _NOEXCEPT
+	{
+		if (x->_right != m_nullptr)
+			return (tree_min(x->_right));
+		while (!tree_is_left_child(x))
+			x = x->parent_unsafe();
+		return (x->parent_unsafe());
+	};
+
+	template <class end_nodeptr, class nodeptr>
+	inline end_nodeptr	tree_next_iter(nodeptr x) _NOEXCEPT
+	{
+		if (x->_right != m_nullptr)
+			return (static_cast<end_nodeptr>(tree_min(x->_right)));
+		while (!tree_is_left_child(x))
+			x = x->parent_unsafe();
+		return (static_cast<end_nodeptr>(x->_parent));
+	};
+
+	template <class end_nodeptr, class nodeptr>
+	inline nodeptr	tree_prev_iter(end_nodeptr x) _NOEXCEPT
+	{
+		if (x->_left != m_nullptr)
+			return (tree_max(x->_left));
+		nodeptr	temp = static_cast<nodeptr>(x);
+		while (tree_is_left_child(temp))
+			temp = temp->parent_unsafe();
+		return (temp->parent_unsafe());
+	};
+
+	template <class nodeptr>
+	nodeptr	tree_leaf(nodeptr x) _NOEXCEPT
+	{
+		while (true)
+		{
+			if (x->_left != m_nullptr)
+			{
+				x = x->_left;
+				continue;
+			}
+			if (x->_right != m_nullptr)
+			{
+				x = x->_right;
+				continue;
+			}
+			break;
+		}
+		return (x);
+	}
+
+	typedef enum
 	{
 		Red,
 		Black
-	};
-
-	template <class K, class V>
-	struct node
-	{
-		K		_key = m_nullptr;
-		V		_value = m_nullptr;
-		color	_color = Black;
-		node*	_parent = m_nullptr;
-		node*	_right = m_nullptr;
-		node*	_left = m_nullptr;
-	};
-
-	template <class K, class V, class alloc = std::allocator< node<K, V> > >
-	class RBTree
+	} color_t;
+	template <class T, class Comp>
+	class tree_base
 	{
 	public:
-		typename K								key_type;
-		typename V								value_type;
-		typename node<key_type, value_type>*	nodeptr;
-		typename alloc							allocate_type;
-	private:
-		nodeptr			_root;
-		allocate_type	_alloc;
+		typedef T			node_type;
+		typedef size_t		size_type;
+		typedef T*			pointer;
+		typedef T const *	const_pointer;
+		typedef T&			reference;
+		typedef T const &	const_reference;
+		struct node
+		{
 
+			node_type	_val = m_nullptr;
+			color_t		_color = Red;
+			node*		_parent = m_nullptr;
+			node*		_left = m_nullptr;
+			node*		_right = m_nullptr;
+			node(node_type val = m_nullptr)
+			: _val(_val), _color(Red), _parent(m_nullptr), _left(m_nullptr), _right(m_nullptr)
+			{}
+			node(const node& origin)
+			: _val(origin._val), _color(Red), _parent(origin._parent), _left(origin._left), _right(origin._right)
+			{}
+		};
+		typedef node*		nodeptr;
+	protected:
+		nodeptr	_root;
 	public:
-		RBTree(const allocate_type& alloc = allocate_type())
-		: _alloc(alloc), _root(m_nullptr) {};
-		~RBTree(void)
-		{ clear_all(_root); };
-
-		//--------------------------Utilitys--------------------------
-		nodeptr	make_node(key_type key, value_type val)
+		tree_base(void) : tree_base(m_nullptr) {};
+		tree_base(const tree_base& origin) { this->_root = new node(origin); };
+		tree_base	&operator=(const tree_base& origin)
 		{
-			nodeptr	temp_node = this->make_node();
-			temp_node->_key = key;
-			temp_node->_value = val;
-			temp_node->_color = Red;
-			temp_node->_parent = m_nullptr;
-			temp_node->_right = m_nullptr;
-			temp_node->_left = m_nullptr;
-			return (temp_node);
+			if (this != &origin)
+				this->_root = new node(origin);
+			return (*this);
 		};
+		virtual ~tree_base(void) { all_clear(); };
 
-		void	clear_all(nodeptr curr_node)
+		// Rotation
+		void	left_rotation(nodeptr x)
 		{
-			if (curr_node == m_nullptr)
-				return ;
-			clear_all(curr_node->_right);
-			clear_all(curr_node->_left);
-			_alloc.deallocate(curr_node);
+			nodeptr	y = x->_right;
+			x->_right = y->_left;				// change child
+			if (y->left != m_nullptr)
+				y->_left->_parent = x;
+			y->_left = x;
+			y->_parent = x->_parent;			// change parent
+			if (x->_parent == m_nullptr)		// x가 root일 때
+				this->_root = y;
+			else if (x == x->_parent->_left)	// x가 x.p의 왼쪽
+				x->_parent->_left = y;
+			else								// x가 x.p의 오른쪽
+				x->_parent->_right = y;
+			x->_parent = y;
 		};
-
-		void	change_left_child(nodeptr left_child = make_node())
-		{ this->_root->_left = left_child; };
-		
-		void	change_right_child(nodeptr right_child = make_node())
-		{ this->_root->_right = right_child; };
-		
-		void	change_color(nodeptr _root)
+		void	right_rotation(nodeptr y)
 		{
-			if (this->_root->_color == Red)
-				this->_root->_color = Black;
+			nodeptr	x = y->_left;
+			y->_left = x->_right;
+			if (y->_left != m_nullptr)
+				y->_left->_parent = y;
+			x->_right = y;
+			x->_parent = y->_parent;
+			if (y->_parent == m_nullptr)
+				this->_root = x;
+			else if (y->_parent->_left == y)
+				y->_parent->left = x;
 			else
-				this->_root->_color = Red;
+				y->_parent->_right = x;
+			y->_parent = x;
 		};
 
-		//--------------------------Rotation--------------------------
-		void	left_rotation(nodeptr target)
+		// Insert
+		void	insert(nodeptr target)
 		{
-			nodeptr	temp = target->_right;
-			target->_right = temp->_left;
-			if (temp->_left != m_nullptr)
-				temp->_left->_parent = target;
-			temp->_parent = target->_parent;
-			if (target->_parent == m_nullptr)
-				this->_root = temp;
-			else if (target == target->_parent->_left)
-				target->_parent->_left = temp;
-			else
-				target->parent->_right = temp;
-			temp->_left = target;
-			target->_parent = temp;
-		};
-		void	right_rotation(nodeptr target)
-		{
-			nodeptr	temp = target->_left;
-			target->_left = temp->_right;
-			if (temp->_right != m_nullptr)
-				temp->_right->_parent = target;
-			temp->_parent = target->_parent;
-			if (target->_parent == m_nullptr)
-				this->_root = temp;
-			else if (target == target->_parent->_right)
-				target->_parent->_right = temp;
-			else
-				target->parent->_left = temp;
-			temp->_right = target;
-			target->_parent = temp;
-		};
-
-		//--------------------------Insert--------------------------
-		void	normal_insert(nodeptr root, nodeptr target)
-		{
-			if (root == m_nullptr)
-				this->_root = target;
-			else if (root->_key < target->_key)
+			nodeptr	p = m_nullptr;
+			nodeptr	c = _root;
+			while (c == m_nullptr)
 			{
-				if (root->_right == m_nullptr)
-					root->_right = target;
+				p = c;
+				if (Comp(target->_val, c->_val))
+					c = c->_right;
 				else
-					normal_insert(root->_right, target);
+					c = c->_left;
 			}
-			else// if (root->_key > target->_key)
-			{
-				if (root->_left == m_nullptr)
-					root->_left = target;
-				else
-					normal_insert(root->_left, target);
-			}
-		};
-		void	insert_fixup_case(nodeptr target, nodeptr uncle, nodeptr bro)
-		{
-			if (uncle->_color == Red)
-			{
-				target->_parent->_color = Black;
-				uncle->_color = Black;
-				target->_parent->_parent->_color = Red;
-				target = target->_parent->_parent;
-			}
+			target->_parent = p;
+			if (p == m_nullptr)
+				_root = target;
+			else if (Comp(target->_val, p->_val))
+				p->_right = target;
 			else
-			{
-				if (target == bro)
-				{
-					target = target->_parent;
-					if (bro == target->_parent->_right)
-						left_rotation(target);
-					else
-						right_rotation(target);
-				}
-				target->_parent->_color = Black;
-				target->_parent->_parent->_color = Red;
-				if (bro == target->_parent->_right)
-					right_rotation(target);
-				else
-					left_rotation(target);
-			}
+				p->_left = target;
+			target->_left = m_nullptr;
+			target->_right = m_nullptr;
+			target->_color = Red;
+			insert_fixup(target);
 		};
 		void	insert_fixup(nodeptr target)
 		{
-			while (target->_parent->_color == Red)
-			{
-				if (target->_parent == target->_parent->_parent->_left)
-					insert_fixup_case(target, target->_parent->_parent->_right, target->_parent->_right);
-				else
-					insert_fixup_case(target, target->_parent->_parent->_left, target->_parent->_left);
-			}
-			this->_root->_color = Black;
-		};
-		void	insert(nodeptr target)
-		{
-			normal_insert(this->_root, target);
-			target->_color = Red;
-			target->_r_child = m_nullptr;
-			target->_l_child = m_nullptr;
-			insert_fixup(target);
-		};
 
+		};
 	};
+	
 };
 
 #endif

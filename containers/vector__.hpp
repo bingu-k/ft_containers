@@ -1,5 +1,5 @@
-#ifndef	VECTOR_HPP
-# define VECTOR_HPP
+#ifndef	VECTOR__HPP
+# define VECTOR__HPP
 
 # include <memory>
 # include "vector_iterator.hpp"

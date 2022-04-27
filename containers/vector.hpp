@@ -1,13 +1,13 @@
-#ifndef	VECTOR__HPP
-# define VECTOR__HPP
+#ifndef	VECTOR_HPP
+# define VECTOR_HPP
 
-# include <iostream>
+// # include <iostream>
 # include <exception>
 # include <memory>
 # include "vector_iterator.hpp"
 # include "reverse_iterator.hpp"
 
-# define NOEXCEPT throw()
+# define _NOEXCEPT throw()
 
 namespace ft
 {
@@ -23,6 +23,7 @@ namespace ft
 		{ throw (std::out_of_range("vector")); };
 	};
 
+	// Vector Base
 	template <class T, class Allocator>
 	class vector_base
 		: protected vector_common<true>
@@ -45,10 +46,10 @@ namespace ft
 		pointer			_end_cap;
 		allocator_type	_alloc;
 
-		allocator_type&	__alloc() NOEXCEPT { return (_alloc); };
-		const allocator_type&	__alloc() const NOEXCEPT { return (_alloc); };
-		pointer&	__end_cap() NOEXCEPT { return (_end_cap); };
-		const pointer&	__end_cap() const NOEXCEPT { return (_end_cap); };
+		allocator_type&	__alloc() _NOEXCEPT { return (_alloc); };
+		const allocator_type&	__alloc() const _NOEXCEPT { return (_alloc); };
+		pointer&	__end_cap() _NOEXCEPT { return (_end_cap); };
+		const pointer&	__end_cap() const _NOEXCEPT { return (_end_cap); };
 
 		vector_base(allocator_type alloc = allocator_type())
 		: _begin(0), _end(0), _end_cap(0), _alloc(alloc) {};
@@ -263,9 +264,6 @@ namespace ft
 		const_reference	back(void) const { return (*(this->_end - 1)); };
 
 		// Modifiers
-			//assign
-				// 가져온 크기만큼 size를 조정해준다.
-				// 이때 capacity는 현재보다 크다면 가져온 크기만큼 재할당해준다.
 		template <class InputIterator>
 		void		assign(InputIterator first, InputIterator last
 						, typename ft::enable_if<!is_integral<InputIterator>::value_type, InputIterator>::type* = m_nullptr)
@@ -384,6 +382,7 @@ namespace ft
 		// Allocator
 		allocator_type	get_allocator(void) const { return (this->__alloc()); };
 	};
+
 	// Relational Operators
 	template <class T, class Alloc>
 	bool operator== (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
