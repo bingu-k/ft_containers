@@ -8,122 +8,12 @@
 
 namespace ft
 {
-	// x로부터 하위 노드의 유효성 검사, black 갯수 확인.
-	template <class nodeptr>
-	unsigned	tree_sub_invariant(nodeptr x)
-	{
-		if (x == m_nullptr) // 리프노드에 도달했을때
-			return (1);
-		else if (x->_left != m_nullptr && x->_left->_parent != x)	// 유효성 검사
-			return (0);
-		else if (x->_right != m_nullptr && x->_right->_parent != x)	// 유효성 검사
-			return (0);
-		else if (x->_left == x->_right && x->_left != m_nullptr)	// 유효성 검사
-			return (0);
-		else if (!x->_is_black)	// 본인이 Red일 때, 자식노드도 Red일까?
-		{
-			if (x->_left && !x->_left->_is_black)
-				return (0);
-			if (x->_right && !x->_right->_is_black)
-				return (0);
-		}
-		// 재귀를 통한 자식의 black 갯수 확인.
-		unsigned	h = tree_sub_invariant(x->_left);
-		if (h == 0)
-			return (0);
-		if (h != tree_sub_invariant(x->_right))
-			return (0);
-		return (h + x->_is_black);
-	};
-
-	// root로부터 하위 노드의 유효성 검사.
-	template <class nodeptr>
-	bool	tree_invariant(nodeptr root)
-	{
-		if (root == m_nullptr)
-			return (true);
-		else if (root->_parent == m_nullptr)
-			return (false);
-		else if (!tree_is_left_child(root))
-			return (false);
-		else if (!root->_is_black)
-			return (false);
-		else
-			return (tree_sub_invariant(root) != 0);
-	};
-
-	template <class nodeptr>
-	inline nodeptr	tree_min(nodeptr x) _NOEXCEPT
-	{
-		while (x->_left != m_nullptr)
-			x = x->_left;
-		return (x);
-	};
-
-	template <class nodeptr>
-	inline nodeptr	tree_max(nodeptr x) _NOEXCEPT
-	{
-		while (x->_right != m_nullptr)
-			x = x->_right;
-		return (x);
-	};
-
-	template <class nodeptr>
-	inline nodeptr	tree_next(nodeptr x) _NOEXCEPT
-	{
-		if (x->_right != m_nullptr)
-			return (tree_min(x->_right));
-		while (!tree_is_left_child(x))
-			x = x->parent_unsafe();
-		return (x->parent_unsafe());
-	};
-
-	template <class end_nodeptr, class nodeptr>
-	inline end_nodeptr	tree_next_iter(nodeptr x) _NOEXCEPT
-	{
-		if (x->_right != m_nullptr)
-			return (static_cast<end_nodeptr>(tree_min(x->_right)));
-		while (!tree_is_left_child(x))
-			x = x->parent_unsafe();
-		return (static_cast<end_nodeptr>(x->_parent));
-	};
-
-	template <class end_nodeptr, class nodeptr>
-	inline nodeptr	tree_prev_iter(end_nodeptr x) _NOEXCEPT
-	{
-		if (x->_left != m_nullptr)
-			return (tree_max(x->_left));
-		nodeptr	temp = static_cast<nodeptr>(x);
-		while (tree_is_left_child(temp))
-			temp = temp->parent_unsafe();
-		return (temp->parent_unsafe());
-	};
-
-	template <class nodeptr>
-	nodeptr	tree_leaf(nodeptr x) _NOEXCEPT
-	{
-		while (true)
-		{
-			if (x->_left != m_nullptr)
-			{
-				x = x->_left;
-				continue;
-			}
-			if (x->_right != m_nullptr)
-			{
-				x = x->_right;
-				continue;
-			}
-			break;
-		}
-		return (x);
-	}
-
 	typedef enum
 	{
 		Red,
 		Black
 	} color_t;
+
 	template <class T, class Comp>
 	class tree_base
 	{
@@ -146,33 +36,54 @@ namespace ft
 			: _val(_val), _color(Red), _parent(m_nullptr), _left(m_nullptr), _right(m_nullptr)
 			{}
 			node(const node& origin)
-			: _val(origin._val), _color(Red), _parent(origin._parent), _left(origin._left), _right(origin._right)
+			: _val(origin._val), _color(origin._color), _parent(origin._parent), _left(origin._left), _right(origin._right)
 			{}
 		};
 		typedef node*		nodeptr;
 	protected:
 		nodeptr	_root;
+		nodeptr	_nil;
 	public:
-		tree_base(void) : tree_base(m_nullptr) {};
-		tree_base(const tree_base& origin) { this->_root = new node(origin); };
+		tree_base(void) : _root(m_nullptr), _nil(m_nullptr)
+		{
+			this->_nil = new node();
+			this->_nil->_color = Black;
+			this->_root = this->_nil;
+		};
+		tree_base(const tree_base& origin)
+		{
+			this->_root = new node(origin._root);
+			this->_nil = new node();
+			this->_nil->_color = Black;
+			this->_root->_parent = this->_nil;
+		};
 		tree_base	&operator=(const tree_base& origin)
 		{
 			if (this != &origin)
-				this->_root = new node(origin);
+			{
+				if (this->_root)
+					all_clear(this->_root);
+				this->_root = new node(origin._root);
+				this->_root->_parent = this->_nil;
+			}
 			return (*this);
 		};
-		virtual ~tree_base(void) { all_clear(); };
+		virtual ~tree_base(void)
+		{
+			all_clear(this->_root);
+			delete this->_nil;
+		};
 
 		// Rotation
 		void	left_rotation(nodeptr x)
 		{
 			nodeptr	y = x->_right;
 			x->_right = y->_left;				// change child
-			if (y->left != m_nullptr)
+			if (y->left != this->_nil)
 				y->_left->_parent = x;
 			y->_left = x;
 			y->_parent = x->_parent;			// change parent
-			if (x->_parent == m_nullptr)		// x가 root일 때
+			if (x->_parent == this->_nil)		// x가 root일 때
 				this->_root = y;
 			else if (x == x->_parent->_left)	// x가 x.p의 왼쪽
 				x->_parent->_left = y;
@@ -184,11 +95,11 @@ namespace ft
 		{
 			nodeptr	x = y->_left;
 			y->_left = x->_right;
-			if (y->_left != m_nullptr)
+			if (y->_left != this->_nil)
 				y->_left->_parent = y;
 			x->_right = y;
 			x->_parent = y->_parent;
-			if (y->_parent == m_nullptr)
+			if (y->_parent == this->_nil)
 				this->_root = x;
 			else if (y->_parent->_left == y)
 				y->_parent->left = x;
@@ -200,9 +111,9 @@ namespace ft
 		// Insert
 		void	insert(nodeptr target)
 		{
-			nodeptr	p = m_nullptr;
+			nodeptr	p = _nil;
 			nodeptr	c = _root;
-			while (c == m_nullptr)
+			while (c != _nil)
 			{
 				p = c;
 				if (Comp(target->_val, c->_val))
@@ -211,23 +122,181 @@ namespace ft
 					c = c->_left;
 			}
 			target->_parent = p;
-			if (p == m_nullptr)
+			if (p == _nil)
 				_root = target;
 			else if (Comp(target->_val, p->_val))
 				p->_right = target;
 			else
 				p->_left = target;
-			target->_left = m_nullptr;
-			target->_right = m_nullptr;
+			target->_left = _nil;
+			target->_right = _nil;
 			target->_color = Red;
 			insert_fixup(target);
 		};
-		void	insert_fixup(nodeptr target)
+		void	insert_fixup_left_node(nodeptr target, nodeptr y)
 		{
+			if (y->_color == Red)						// 삼촌색 Red?
+			{
+				target->_parent->_color = Black;		// 부모색 Black으로 변경
+				y->_color = Black;						// 삼촌색 Black으로 변경
+				target->_parent->_parent->_color = Red;	// 조부모색 Red로 변경
+				target = target->_parent->_parent;		// target을 조부모로 변경
+			}
+			else										// 삼촌색 Black?
+			{
+				if (target == target->_parent->_right)	// target이 오른쪽 노드?
+				{
+					target = target->_parent;			// target을 부모로 변경
+					left_rotation(target);				// 좌회전
+				}
+				target->_parent->_color = Black;		// 부모색 Black으로 변경
+				target->_parent->_parent->_color = Red;	// 조부모색 Red로 변경
+				right_rotation(target);					// 우회전
+			}
+		};
+		void	insert_fixup_right_node(nodeptr target, nodeptr y)
+		{
+			if (y->_color == Red)						// 삼촌색 Red?
+			{
+				target->_parent->color = Black;			// 부모색 Black으로 변경
+				y->_color = Black;						// 삼촌색 Black으로 변경
+				target->_parent->_parent->_color = Red;	// 조부모색 Red로 변경
+				target = target->_parent->_parent;		// target을 조부모로 변경
+			}
+			else										// 삼촌색 Black?
+			{
+				if (target == target->_parent->_left)	// target이 왼쪽 노드?
+				{
+					target = target->_parent;			// target을 부모로 변경
+					right_rotation(target);				// 우회전
+				}
+				target->_parent->_color = Black;		// 부모색 Black으로 변경
+				target->_parent->_parent->_color = Red;	// 조부모색 Red로 변경
+				left_rotation(target);					// 좌회전
+			}
+		};
+		void	insert_fixup(nodeptr target)
+		{												// 부모가 존재하면서 부모의 색이 Red?
+			while (target->_parent->_color == Red)
+			{											// 삼촌이 어느 방향?
+				if (target->_parent == target->_parent->_parent->_left)
+					insert_fixup_left_node(target, target->_parent->_parent->_right);
+				else
+					insert_fixup_right_node(target, target->_parent->_parent->_left);
+			}
+			_root->_color = Black;
+		};
 
+		// Delete
+		nodeptr	sibling(nodeptr target)
+		{
+			if (target->_left == _nil)
+				return (target->_parent->_right);
+			else
+				return (target->_parent->_left);
+		};
+		void	replace_node(nodeptr target, nodeptr child)
+		{
+			child->_parent = target->_parent;
+			if (target->_parent->_left == target)
+				target->_parent->_left = child;
+			else
+				target->_parent->_right = child;
+		};
+		void	delete(nodeptr target)
+		{
+			replace_node(target, child);		// target과 child의 위치를 변경한다.
+			if (target->_color == Black)		// target색이 Black?
+			{
+				if (child->_color == Red)		// child색이 Red?
+					child->_color = Black;		// child색 Black으로 변경
+				else
+					delete_case1(target);		// delete case로 입장.
+			}
+			delete target;						// target을 free한다.
+		};
+		void	delete_case1(nodeptr target)
+		{
+			if (target->_parent != this->_nil)	// target이 루트노드가 아닌가?
+				delete_case2(target);
+		};
+		void	delete_case2(nodeptr target)
+		{
+			nodeptr	y = sibling(target);
+			if (y->_color == Red)						// 형제노드의 색이 Red
+			{
+				target->_parent->_color = Red;			// 부모노드의 색을 Red로 변경
+				y->_color = Black;						// 형제노드의 색을 Black으로 변경
+				if (target == target->_parent->_left)	// 해당노드가 왼쪽노드?
+					left_rotation(target->_parent);		// 부모노드를 좌회전
+				else									// 해당노드가 오른쪽노드?
+					right_rotation(target->_parent);	// 부모노드를 우회전
+			}
+			delete_case3(target);
+		};
+		void	delete_case3(nodeptr target)
+		{
+			nodeptr	y = sibling(target);				// 부모노드의 색이 Black, 형제노드의 색이 Black, 형제노드의 자식노드들의 색이 Black
+			if (target->_parent->_color == Black && y->_color == Black
+					&& y->_left->_color == Black && y->_right->_color == Black)
+			{
+				y->_color = Red;						// 형제노드의 색을 Red로 변경
+				delete_case1(target);					// 1case로 리턴
+			}
+			else
+				delete_case4(target);
+		};
+		void	delete_case4(nodeptr target)
+		{
+			nodeptr	y = sibling(target);
+			if (target->_parent->_color == Red && y->_color == Black
+				&& y->_left->_color == Black && y->_right->_color == Black)
+			{
+				y->_color = Red;
+				target->_parent->_color = Black;
+			}
+			else
+				delete_case5(target);
+		};
+		void	delete_case5(nodeptr target)
+		{
+			nodeptr	y = sibling(target);
+			if (y->_color == Black)
+			{
+				if (target == target->_parent->_left && y->_right->_color == Black
+					&& y->_left->_color == Red)
+				{
+					y->_color = Red;
+					y->_left->_color = Black;
+					right_rotation(y);
+				}
+				else if (target == target->_parent->_right && y->_left->_color == Black
+						&& y->_right->_color == Red)
+				{
+					y->_color = Red;
+					y->_right->color = Black;
+					left_rotation(y);
+				}
+			}
+			delete_case6(target);
+		};
+		void	delete_case6(nodeptr target)
+		{
+			nodeptr	y = sibling(target);
+			y->_color = target->_parent->_color;
+			target->_parent->_color = Black;
+			if (target == target->_parent->_left)
+			{
+				y->_right->_color = Black;
+				left_rotation(target->_parent);
+			}
+			else
+			{
+				y->_left->_color = Black;
+				right_rotation(target->_parent);
+			}
 		};
 	};
-	
 };
 
 #endif
