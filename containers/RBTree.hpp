@@ -3,43 +3,23 @@
 
 # include <memory>
 # include <iostream>
-# include "utils.hpp"
 # include "pair.hpp"
+# include "iterator.hpp"
+# include "node.hpp"
 
 namespace ft
 {
-	typedef enum
-	{
-		Red,
-		Black
-	} color_t;
-
-	template <class T, class Comp>
+	template <class T, class Comp, class Alloc>
 	class tree_base
 	{
 	public:
 		typedef T			node_type;
 		typedef size_t		size_type;
 		typedef T*			pointer;
-		typedef T const *	const_pointer;
+		typedef T const*	const_pointer;
 		typedef T&			reference;
 		typedef T const &	const_reference;
-		struct node
-		{
-
-			node_type	_val = m_nullptr;
-			color_t		_color = Red;
-			node*		_parent = m_nullptr;
-			node*		_left = m_nullptr;
-			node*		_right = m_nullptr;
-			node(node_type val = m_nullptr)
-			: _val(_val), _color(Red), _parent(m_nullptr), _left(m_nullptr), _right(m_nullptr)
-			{}
-			node(const node& origin)
-			: _val(origin._val), _color(origin._color), _parent(origin._parent), _left(origin._left), _right(origin._right)
-			{}
-		};
-		typedef node*		nodeptr;
+		typedef node<T>*	nodeptr;
 	protected:
 		nodeptr	_root;
 		nodeptr	_nil;
@@ -316,6 +296,15 @@ namespace ft
 			}
 			x->_color = Black;
 		};
+	};
+
+	template <class T>
+	class tree_iterator
+	{
+	public:
+		typedef T											iterator_type;
+		typedef iterator<bidirectional_iterator_tag(), T>	iter;
+		typedef 
 	};
 };
 
