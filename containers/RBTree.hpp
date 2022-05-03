@@ -75,8 +75,8 @@ namespace ft
 		{
 			nodeptr	x = y->_left;
 			y->_left = x->_right;
-			if (y->_left != this->_nil)
-				y->_left->_parent = y;
+			if (y->_right != this->_nil)
+				y->_right->_parent = y;
 			x->_right = y;
 			x->_parent = y->_parent;
 			if (y->_parent == this->_nil)

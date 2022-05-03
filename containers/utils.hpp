@@ -181,64 +181,19 @@ namespace ft
 		typedef typename	iterator_traits<InputIter2>::value_type	v2;
 		return ( ft::lexicographical_compare(first1, last1, first2, last2, ft::less<v1, v2>()) );
 	};
-
-	// --------------------------map--------------------------
-	
-	// __void_t
-	// void type을 표현해주기 위함.
-	// 걍 void를 쓰면 될 것을 왜 쓰냐?
-	// 탬플릿 변수를 하나 가져오는데 이 변수가 없으면 에러가 날 것.
-	template <class>
-	struct _void_t { typedef void type; };
-
-	// rebind
-	template <class T, class U, bool = _has_rebind<T, U>::value>
-	struct _has_rebind_other
-	{
-		
-	};
-	
-	template <class T, class U, bool = ft::_has_rebind_other<T, U>::value >
-	struct _allocator_traits_rebind
-	{ typeef typename T::template rebind<U>::other type; };
-	template <class alloc, class T>
-	struct rebind_alloc
-	{ typedef typename ft::_allocator_traits_rebind<alloc, T>::type other; };
-
-	// has_element_type
-	// element_type가 존재하는지 확인
-	template <class T, class = void>
-	struct has_element_type
-	{ static const bool& type = false; };
-	template <class T, typename _void_t<typename T::element_type>::type>
-	struct has_element_type
-	{ static const bool& type = true; };
-
-	// pointer_traits_element_type
-	// element_type을 추출하기 위함.
-	template <class ptr, bool = has_element_type<ptr>::type>
-	struct pointer_traits_element_type;
-	template <class ptr>
-	struct pointer_traits_element_type<ptr, true>
-	{ typedef typename ptr::element_type	type; };
-	template <class ptr>
-	struct pointer_traits_element_type<ptr, false>
-	{ typedef ptr	type; };
-
+	// rebind의 행동
+		// allocator에서는 탬플릿 변수 하나를 갖고와서
+		// 해당 탬플릿 변수를 allocator에 적용시켜 other로 typedef함.
+		// typedef allocator<V>	other
+		// pointer에서도 탬플릿 변수 하나를 갖고와서
+		// 해당 탬플릿 변수의 포인터를 other로 적용하여 typedef함.
+		// typedef V*	other
 	// rebind의 이유
-	// map은 pair로 key와 value를 갖는데
-	// key가 다르면 문제가 생기지만
-	// value가 다를때는 문제가 생기진 않는다.
-	// 허나, 포인터를 그대로 받아오는 상황에서는 문제가 생긴다.
-	// 원래의 key, value로 typedef를 이용해 포인터를 지정했는데
-	// 다른 타입의 value를 넣어버린다면 rebind를 이용해서 포인터를 만들어줘야한다.
-	template <class T, class U>
-	struct pointer_traits_rebind
-	{ typedef T::template rebind<U>::other	type; };
-
-	template <class from, class T>
-	struct rebind_pointer
-	{ typedef pointer_traits<from>::template rebind<T>::other	type; };
+	// 처음에 Allocator를 받아올때 탬플릿 변수는 pair로 받는다.
+	// 그렇게 되면 우리가 정의한 Allocator는 pair에 관한 할당을 해주는데
+	// map은 내부가 tree로 이뤄져있기 때문에 우리는 node에 대한 할당을 해주어야한다.
+	// 그렇게 되면 우리가 node에 대한 할당은 rebind를 통해 node에 관한 Allocator를 생성하고
+	// 생성된 Allocator로 할당을 해주는 상황이 되야하기 때문에 rebind를 사용해야한다.
 }
 
 #endif

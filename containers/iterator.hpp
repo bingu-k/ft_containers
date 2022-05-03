@@ -2,6 +2,7 @@
 # define ITERATOR_HPP
 
 # include <cstddef>
+# include "tree.hpp"
 
 namespace ft
 {
