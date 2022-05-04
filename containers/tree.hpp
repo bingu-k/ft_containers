@@ -4,7 +4,7 @@
 # include "iterator.hpp"
 # include "utils.hpp"
 # include "pair.hpp"
-
+# include <map>
 namespace ft
 {
 	/////////////////////// node ///////////////////////
@@ -58,7 +58,6 @@ namespace ft
 		typedef iterator_type										pointer;
 		typedef value_type&											reference;
 		typedef typename iter::iterator_category					iterator_category;
-
 	private:
 		// Element
 		pointer	_elem;
@@ -199,31 +198,35 @@ namespace ft
 	class tree
 	{
 	public:
-		typedef V									value_type;
-		typedef Compare								value_compare;
-		typedef Alloc								allocator_type;
-		typedef typename value_type::first_type		key_type;
-		typedef typename value_type::second_type	mapped_type;
-		
-		typedef	value_type*							pointer;
-		typedef const value_type*					const_pointer;
-		typedef value_type&							reference;
-		typedef const value_type&					const_reference;
-		typedef node<value_type, mapped_type>		non_ptr_node;
-		typedef node<value_type, mapped_type>*		nodeptr;
+		typedef V											value_type;
+		typedef Compare										value_compare;
+		typedef typename value_type::first_type				key_type;
+		typedef typename value_type::second_type			mapped_type;
 
-		typedef tree_iterator<value_type, nodeptr>	iterator;
+		typedef	value_type*									pointer;
+		typedef const value_type*							const_pointer;
+		typedef value_type&									reference;
+		typedef const value_type&							const_reference;
+
+		typedef node<value_type, mapped_type>				non_ptr_node;
+		typedef node<value_type, mapped_type>*				nodeptr;
+		typedef Alloc										allocator_type;
+		typedef typename Alloc::template rebind<non_ptr_node>::other
+															node_alloc;
+		typedef typename node_alloc::difference_type		difference_type;
+		typedef typename node_alloc::size_type				size_type;
+
+		typedef tree_iterator<value_type, nodeptr>			iterator;
 		typedef tree_const_iterator<value_type, nodeptr>	const_iterator;
 
 	private:
-		typedef typename Alloc::template rebind<nodeptr>::other	node_alloc;
-
+		size_type	_size;
 		nodeptr		_root;
 		nodeptr		_nil;
 		node_alloc	_alloc;
 	public:
 		tree(allocator alloc = node_alloc())
-		: _root(m_nullptr), _nil(m_nullptr), _alloc(alloc)
+		: _size(0), _root(m_nullptr), _nil(m_nullptr), _alloc(alloc)
 		{
 			this->_nil = _alloc.allocate(1);
 			_alloc.construct(this->_nil, non_ptr_node());
@@ -237,68 +240,7 @@ namespace ft
 		};
 
 	// Red-Black Tree
-		// Rotation
-	private:
-		void	left_rotation(nodeptr x)
-		{
-			nodeptr	y = x->_right;
-			x->_right = y->_left;
-			if (y->_left != this->_nil)
-				y->_left->parent = x;
-			y->_left = x;
-			y->_parent = x->_parent;
-			if (x->_parent == this->_nil)
-				this->_root = y;
-			else if (x == x->_parent->_left)
-				x->_parent->_left = y;
-			else
-				x->_parent->_right = y;
-			x->_parent = y;
-		};
-		void	right_rotation(nodeptr y)
-		{
-			nodeptr	x = y->_left;
-			y->_left = x->_right;
-			if (y->_right != this->_nil)
-				y->_right->_parent = y;
-			x->_right = y;
-			x->_parent = y->_parent;
-			if (y->_parent == this->_nil)
-				this->_root = x;
-			else if (y == y->_parent->_left)
-				y->_parent->left = x;
-			else
-				y->_parent->_right = x;
-			y->_parent = x;
-		};
-
-		// Insert
-	public:
-		void	insert_node(nodeptr target_node)
-		{
-			nodeptr	parent_node = _nil;
-			nodeptr	criteria_node = _root;
-			while (criteria_node != _nil)
-			{
-				parent_node = criteria_node;
-				if (value_compare(target_node->_value, criteria_node->_value))
-					criteria_node = criteria_node->_left;
-				else
-					criteria_node = criteria_node->_right;
-			}
-			target_node->_parent = parent_node;
-			if (parent_node == _nil)
-				_root = target_node;
-			else if (value_compare(target_node->_value, parent_node->_value))
-				parent_node->_left = target_node;
-			else
-				parent_node->_right = target_node;
-			target_node->_left = _nil;
-			target_node->_right = _nil;
-			target_node->_color = Red;
-			insert_fixup(target_node);
-		};
-	private:
+		// Utility
 		nodeptr	find_bro_node(nodeptr target_node) const
 		{
 			if (target_node == _root)
@@ -307,111 +249,6 @@ namespace ft
 				return (target_node->_parent->_right);
 			else
 				return (target_node->_parent->_left);
-		}
-		void	insert_fixup(nodeptr target_node)
-		{
-			while (target_node->_parent->_color == Red)
-			{
-				nodeptr	uncle_node = find_bro_node(target_node->_parent);	// 삼촌 노드 생성
-				if (target_node->_parent == uncle_node->_parent->_left)			// 삼촌 방향 확인
-				{
-					if (uncle_node->_color == Red)
-					{
-						target_node->_parent->_color = Black;			// 부모노드색 Black으로 변경
-						uncle_node->_color = Black;						// 삼촌노드색 Black으로 변경
-						target_node->_parent->_parent->_color = Red;	// 조부모노드색 Red로 변경
-						target_node = target_node->_parent->_parent		// target을 조부모로 변경하여 재귀모델 생성
-					}
-					else	// 아래 과정은 색의 균형을 맞추기위해 회전시킨 것이다.
-					{		// 부모 Red, 삼촌 Black으로 부모를 자식화시킨 것이다.
-						if (target_node == target_node->_parent->_right)
-						{												// target이 오른쪽노드인가?
-							target_node == target_node->_parent;
-							left_rotation(target_node);					// 좌회전
-						}
-						target_node->_parent->_color = Black;			// 부모노드색 Black으로 변경
-						target_node->_parent->_parent->_color = Red;	// 조부모노드색 Red로 변경
-						right_rotation(target_node);					// 우회전
-					}
-				}
-				else
-				{
-					if (uncle_node->_color == Red)
-					{
-						target_node->_parent->_color = Black;			// 부모노드색 Black으로 변경
-						uncle_node->_color = Black;						// 삼촌노드색 Black으로 변경
-						target_node->_parent->_parent->_color = Red;	// 조부모노드색 Red로 변경
-						target_node = target_node->_parent->_parent		// target을 조부모로 변경하여 재귀모델 생성
-					}
-					else	// 아래 과정은 색의 균형을 맞추기위해 회전시킨 것이다.
-					{		// 부모 Red, 삼촌 Black으로 부모를 자식화시킨 것이다.
-						if (target_node == target_node->_parent->_left)
-						{												// target이 오른쪽노드인가?
-							target_node == target_node->_parent;
-							right_rotation(target_node);				// 우회전
-						}
-						target_node->_parent->_color = Black;			// 부모노드색 Black으로 변경
-						target_node->_parent->_parent->_color = Red;	// 조부모노드색 Red로 변경
-						left_rotation(target_node);						// 좌회전
-					}
-				}
-			}
-			_root->_color = Black;
-		};
-
-		// Delete
-	public:
-		void	delete_node(nodeptr target_node)
-		{
-			color_t	origin_color = target_node->_color;
-			nodeptr	replace_node = find_replace_node(target_node);
-			color_t	replace_node_color = replace_node->_color;
-			if (replace_node != _nil)
-			{
-				nodeptr	fixup_node = replace_node->_right;
-				replace(replace_node);
-				replace_node->_color = origin_color;
-				if (r_color == Black)
-					delete_fixup(fixup_node);	// 검-검, 빨-검
-			}
-			else
-				_root = _nil;
-			remove_node(target_node);
-		};
-	private:
-		void	replace(nodeptr target_node, nodeptr replace_node)
-		{
-			replace_node->_parent = target_node->_parent;
-			if (target_node->_left == replace_node)
-			{
-				replace_node->_left = _nil;
-				replace_node->_right = target_node->_right;
-				if (target_node->_right != _nil)
-					target_node->_right->_parent = replace_node;
-			}
-			else if (target_node->_right == replace_node)
-			{
-				replace_node->_right = _nil;
-				replace_node->_left = target_node->_left;
-				if (target_node->_left != _nil)
-					target_node->_left->_parent = replace_node;
-			}
-			else
-			{
-				replace_node->parent->_left = replace_node->_right;
-				if (replace_node->_right != _nil)
-					replace_node->_right->_parent = replace_node->_parent;
-				if (target_node->_parent->_left == target_node)
-					target_node->_parent->_left = replace_node;
-				else
-					target_node->_parent->_right = replace_node;
-				replace_node->_left = target_node->_left;
-				if (target_node->_left != _nil)
-					target_node->_left->_parent = replace_node;
-				replace_node->_right = target_node->_right;
-				if (target_node->_right != _nil)
-					target_node->_right->_parent = replace_node;
-			}
 		};
 		nodeptr	find_replace_node(nodeptr replace_node)
 		{
@@ -428,94 +265,293 @@ namespace ft
 				return (replace_node);
 			}
 		};
-		void	delete_fixup(nodeptr target_node)
+	private:
+		// Rotation
+	private:
+		void	left_rotation(nodeptr x);
+		void	right_rotation(nodeptr y);
+		// Insert
+	public:
+		void	insert_node(nodeptr target_node);
+	private:
+		void	insert_fixup(nodeptr target_node);
+		// Delete
+	public:
+		void	delete_node(nodeptr target_node);
+	private:
+		void	replace(nodeptr target_node, nodeptr replace_node);
+		void	delete_fixup(nodeptr target_node);
+		// clear()
+		void	remove_node(nodeptr target_node);
+		void	all_clear(nodeptr node);
+		///////////////// map relative function /////////////////
+		size_type	size(void);
+		size_type	max_size(void); // node max_size
+		nodeptr		make_node(const value_type& val);
+		pair<iterator, bool>	insert_unique(const value_type& val);
+		iterator				insert_unique(const_iterator pos, const value_type& val);
+		void					insert_multi(const_iterator first, const_iterator last);
+		iterator	erase_unique(const_iterator pos);
+		iterator	erase_multi(const_iterator first, const_iterator last);
+		iterator		is_there(const key_type& key);
+		const_iterator	is_there(const key_type& key);
+		iterator		lower_bound(const key_type& key);
+		const_iterator	lower_bound(const key_type& key);
+		iterator		upper_bound(const key_type& key);
+		const_iterator	upper_bound(const key_type& key);
+	};
+	template <class V, class Compare, class Alloc>
+	void	tree<V, Compare, Alloc>::left_rotation(nodeptr x)
+	{
+		nodeptr	y = x->_right;
+		x->_right = y->_left;
+		if (y->_left != this->_nil)
+			y->_left->parent = x;
+		y->_left = x;
+		y->_parent = x->_parent;
+		if (x->_parent == this->_nil)
+			this->_root = y;
+		else if (x == x->_parent->_left)
+			x->_parent->_left = y;
+		else
+			x->_parent->_right = y;
+		x->_parent = y;
+	};
+	template <class V, class Compare, class Alloc>
+	void	tree<V, Compare, Alloc>::right_rotation(nodeptr x)
+	{
+		nodeptr	x = y->_left;
+		y->_left = x->_right;
+		if (y->_right != this->_nil)
+			y->_right->_parent = y;
+		x->_right = y;
+		x->_parent = y->_parent;
+		if (y->_parent == this->_nil)
+			this->_root = x;
+		else if (y == y->_parent->_left)
+			y->_parent->left = x;
+		else
+			y->_parent->_right = x;
+		y->_parent = x;
+	};
+
+	template <class V, class Compare, class Alloc>
+	void	tree<V, Compare, Alloc>::insert_node(nodeptr target_node)
+	{
+		nodeptr	parent_node = _nil;
+		nodeptr	criteria_node = _root;
+		while (criteria_node != _nil)
 		{
-			while (target_node != _root && target_node->_color == Black)
+			parent_node = criteria_node;
+			if (value_compare(target_node->_value, criteria_node->_value))
+				criteria_node = criteria_node->_left;
+			else
+				criteria_node = criteria_node->_right;
+		}
+		target_node->_parent = parent_node;
+		if (parent_node == _nil)
+			_root = target_node;
+		else if (value_compare(target_node->_value, parent_node->_value))
+			parent_node->_left = target_node;
+		else
+			parent_node->_right = target_node;
+		target_node->_left = _nil;
+		target_node->_right = _nil;
+		target_node->_color = Red;
+		insert_fixup(target_node);
+	};
+	template <class V, class Compare, class Alloc>
+	void	tree<V, Compare, Alloc>::insert_fixup(nodeptr target_node)
+	{
+		while (target_node->_parent->_color == Red)
+		{
+			nodeptr	uncle_node = find_bro_node(target_node->_parent);	// 삼촌 노드 생성
+			if (target_node->_parent == uncle_node->_parent->_left)			// 삼촌 방향 확인
 			{
-				nodeptr	bro_node = find_bro_node(target_node);
-				if (target_node == target_node->_parent->_left)
+				if (uncle_node->_color == Red)
 				{
-					if (bro_node->_color == Red)
-					{
-						bro_node->_color = Black;
-						target_node->_parent->_color = Red;
-						left_rotation(target_node->_parent);
-						bro_node = target_node->_parent->_right;
+					target_node->_parent->_color = Black;			// 부모노드색 Black으로 변경
+					uncle_node->_color = Black;						// 삼촌노드색 Black으로 변경
+					target_node->_parent->_parent->_color = Red;	// 조부모노드색 Red로 변경
+					target_node = target_node->_parent->_parent		// target을 조부모로 변경하여 재귀모델 생성
+				}
+				else	// 아래 과정은 색의 균형을 맞추기위해 회전시킨 것이다.
+				{		// 부모 Red, 삼촌 Black으로 부모를 자식화시킨 것이다.
+					if (target_node == target_node->_parent->_right)
+					{												// target이 오른쪽노드인가?
+						target_node == target_node->_parent;
+						left_rotation(target_node);					// 좌회전
 					}
-					if (bro_node->_left->_color == Black
-						&& bro_node->_right->_color == Black)
-					{
-						bro_node->_color = Red;
-						target_node = target_node->_parent;
+					target_node->_parent->_color = Black;			// 부모노드색 Black으로 변경
+					target_node->_parent->_parent->_color = Red;	// 조부모노드색 Red로 변경
+					right_rotation(target_node);					// 우회전
+				}
+			}
+			else
+			{
+				if (uncle_node->_color == Red)
+				{
+					target_node->_parent->_color = Black;			// 부모노드색 Black으로 변경
+					uncle_node->_color = Black;						// 삼촌노드색 Black으로 변경
+					target_node->_parent->_parent->_color = Red;	// 조부모노드색 Red로 변경
+					target_node = target_node->_parent->_parent		// target을 조부모로 변경하여 재귀모델 생성
+				}
+				else	// 아래 과정은 색의 균형을 맞추기위해 회전시킨 것이다.
+				{		// 부모 Red, 삼촌 Black으로 부모를 자식화시킨 것이다.
+					if (target_node == target_node->_parent->_left)
+					{												// target이 오른쪽노드인가?
+						target_node == target_node->_parent;
+						right_rotation(target_node);				// 우회전
 					}
-					else
-					{
-						if (bro_node->_right->_color == Black)
-						{
-							bro_node->_left->_color = Black;
-							bro_node->_color = Red;
-							right_rotation(bro_node);
-							bro_node = target_node->_parent->_right;
-						}
-						bro_node->_color = target_node->_parent->_color;
-						target_node->_parent->_color = Black;
-						bro_node->_right->_color = Black;
-						left_rotation(x->_parent);
-						target_node = _root;
-					}
+					target_node->_parent->_color = Black;			// 부모노드색 Black으로 변경
+					target_node->_parent->_parent->_color = Red;	// 조부모노드색 Red로 변경
+					left_rotation(target_node);						// 좌회전
+				}
+			}
+		}
+		_root->_color = Black;
+	};
+	template <class V, class Compare, class Alloc>
+	void	tree<V, Compare, Alloc>::delete_node(nodeptr target_node)
+	{
+		color_t	origin_color = target_node->_color;
+		nodeptr	replace_node = find_replace_node(target_node);
+		color_t	replace_node_color = replace_node->_color;
+		if (replace_node != _nil)
+		{
+			nodeptr	fixup_node = replace_node->_right;
+			replace(replace_node);
+			replace_node->_color = origin_color;
+			if (r_color == Black)
+				delete_fixup(fixup_node);	// 검-검, 빨-검
+		}
+		else
+			_root = _nil;
+		remove_node(target_node);
+	};
+	template <class V, class Compare, class Alloc>
+	void	tree<V, Compare, Alloc>::replace(nodeptr target_node, nodeptr replace_node)
+	{
+		replace_node->_parent = target_node->_parent;
+		if (target_node->_left == replace_node)
+		{
+			replace_node->_left = _nil;
+			replace_node->_right = target_node->_right;
+			if (target_node->_right != _nil)
+				target_node->_right->_parent = replace_node;
+		}
+		else if (target_node->_right == replace_node)
+		{
+			replace_node->_right = _nil;
+			replace_node->_left = target_node->_left;
+			if (target_node->_left != _nil)
+				target_node->_left->_parent = replace_node;
+		}
+		else
+		{
+			replace_node->parent->_left = replace_node->_right;
+			if (replace_node->_right != _nil)
+				replace_node->_right->_parent = replace_node->_parent;
+			if (target_node->_parent->_left == target_node)
+				target_node->_parent->_left = replace_node;
+			else
+				target_node->_parent->_right = replace_node;
+			replace_node->_left = target_node->_left;
+			if (target_node->_left != _nil)
+				target_node->_left->_parent = replace_node;
+			replace_node->_right = target_node->_right;
+			if (target_node->_right != _nil)
+				target_node->_right->_parent = replace_node;
+		}
+	};
+	template <class V, class Compare, class Alloc>
+	void	tree<V, Compare, Alloc>::delete_fixup(nodeptr target_node)
+	{
+		while (target_node != _root && target_node->_color == Black)
+		{
+			nodeptr	bro_node = find_bro_node(target_node);
+			if (target_node == target_node->_parent->_left)
+			{
+				if (bro_node->_color == Red)
+				{
+					bro_node->_color = Black;
+					target_node->_parent->_color = Red;
+					left_rotation(target_node->_parent);
+					bro_node = target_node->_parent->_right;
+				}
+				if (bro_node->_left->_color == Black
+					&& bro_node->_right->_color == Black)
+				{
+					bro_node->_color = Red;
+					target_node = target_node->_parent;
 				}
 				else
 				{
-					if (bro_node->_color == Red)
+					if (bro_node->_right->_color == Black)
 					{
-						bro_node->_color = Black;
-						target_node->_parent->_color = Red;
-						right_rotation(target_node->_parent);
-						bro_node = target_node->_parent->_left;
-					}
-					if (bro_node->_left->_color == Black
-						&& bro_node->_right->_color == Black)
-					{
-						bro_node->_color = Red;
-						target_node = target_node->_parent;
-					}
-					else
-					{
-						if (bro_node->_left->_color == Black)
-						{
-							bro_node->_left->_color = Black;
-							bro_node->_color = Red;
-							left_rotation(bro_node);
-							bro_node = target_node->_parent->_left;
-						}
-						bro_node->_color = target_node->_parent->_color;
-						target_node->_parent->_color = Black;
 						bro_node->_left->_color = Black;
-						right_rotation(x->_parent);
-						target_node = _root;
+						bro_node->_color = Red;
+						right_rotation(bro_node);
+						bro_node = target_node->_parent->_right;
 					}
+					bro_node->_color = target_node->_parent->_color;
+					target_node->_parent->_color = Black;
+					bro_node->_right->_color = Black;
+					left_rotation(x->_parent);
+					target_node = _root;
 				}
 			}
-			target_node->_color = Black;
-		};
-		// clear()
-		void	remove_node(nodeptr target_node)
-		{
-			_alloc.destroy(target_node);
-			_alloc.deallocate(target_node, 1);
-		};
-		void	all_clear(nodeptr node)
-		{
-			if (node != _nil)
-				return ;
 			else
 			{
-				all_clear(node->_left);
-				all_clear(node->_right);
-				remove_node(node);
+				if (bro_node->_color == Red)
+				{
+					bro_node->_color = Black;
+					target_node->_parent->_color = Red;
+					right_rotation(target_node->_parent);
+					bro_node = target_node->_parent->_left;
+				}
+				if (bro_node->_left->_color == Black
+					&& bro_node->_right->_color == Black)
+				{
+					bro_node->_color = Red;
+					target_node = target_node->_parent;
+				}
+				else
+				{
+					if (bro_node->_left->_color == Black)
+					{
+						bro_node->_left->_color = Black;
+						bro_node->_color = Red;
+						left_rotation(bro_node);
+						bro_node = target_node->_parent->_left;
+					}
+					bro_node->_color = target_node->_parent->_color;
+					target_node->_parent->_color = Black;
+					bro_node->_left->_color = Black;
+					right_rotation(x->_parent);
+					target_node = _root;
+				}
 			}
-		};
-		
+		}
+		target_node->_color = Black;
+	};
+	template <class V, class Compare, class Alloc>
+	void	tree<V, Compare, Alloc>::remove_node(nodeptr target_node)
+	{
+		_alloc.destroy(target_node);
+		_alloc.deallocate(target_node, 1);
+	};
+	template <class V, class Compare, class Alloc>
+	void	tree<V, Compare, Alloc>::all_clear(nodeptr node)
+	{
+		if (node != _nil)
+			return ;
+		else
+		{
+			all_clear(node->_left);
+			all_clear(node->_right);
+			remove_node(node);
+		}
 	};
 };
 
