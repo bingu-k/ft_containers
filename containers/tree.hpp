@@ -4,7 +4,7 @@
 # include "iterator.hpp"
 # include "utils.hpp"
 # include "pair.hpp"
-# include <map>
+
 namespace ft
 {
 	/////////////////////// node ///////////////////////
@@ -41,6 +41,9 @@ namespace ft
 		node(void) : val_node<mapped_type>(), _value(m_nullptr), _color(Red)
 		, _parent(m_nullptr), _left(m_nullptr), _right(m_nullptr)
 		{}
+		node(const value_type& key, const mapped_type& val)
+		: val_node<mapped_type>(val), _value(key), _color(Red)
+		, _parent(m_nullptr), _left(m_nullptr), _right(m_nullptr)
 	};
 
 	/////////////////////// iter ///////////////////////
@@ -241,6 +244,7 @@ namespace ft
 
 	// Red-Black Tree
 		// Utility
+	private:
 		nodeptr	find_bro_node(nodeptr target_node) const
 		{
 			if (target_node == _root)
@@ -265,41 +269,114 @@ namespace ft
 				return (replace_node);
 			}
 		};
-	private:
-		// Rotation
-	private:
-		void	left_rotation(nodeptr x);
-		void	right_rotation(nodeptr y);
-		// Insert
-	public:
-		void	insert_node(nodeptr target_node);
-	private:
-		void	insert_fixup(nodeptr target_node);
-		// Delete
-	public:
-		void	delete_node(nodeptr target_node);
-	private:
 		void	replace(nodeptr target_node, nodeptr replace_node);
+		void	insert_fixup(nodeptr target_node);
 		void	delete_fixup(nodeptr target_node);
-		// clear()
 		void	remove_node(nodeptr target_node);
 		void	all_clear(nodeptr node);
-		///////////////// map relative function /////////////////
-		size_type	size(void);
-		size_type	max_size(void); // node max_size
-		nodeptr		make_node(const value_type& val);
-		pair<iterator, bool>	insert_unique(const value_type& val);
-		iterator				insert_unique(const_iterator pos, const value_type& val);
+		void	left_rotation(nodeptr x);
+		void	right_rotation(nodeptr y);
+	public:
+		nodeptr	insert_node(nodeptr target_node, nodeptr criteria_node = _root));
+		void	delete_node(nodeptr target_node);
+
+	///////////////// map relative function /////////////////
+	public:
+		size_type	size(void) { return (this->_size); };
+		size_type	max_size(void) { return (this->_alloc.max_size()); };
+
+		nodeptr		make_node(const value_type& val)
+		{
+			nodptr	res = _alloc.allocate(node(), 1);
+			_alloc.construct(res, node(val.first, val.second));
+			return (res);
+		};
+
+		pair<iterator, bool>	insert_unique(const value_type& val)
+		{
+			iterator	res(find(val.first));
+
+			if (*res != m_nullptr)
+				return (ft::make_pair(res, false));
+			else
+				return (ft::make_pair(iterator(insert_node(make_node(val))), true));
+		};
+		iterator				insert_unique(const_iterator pos, const value_type& val)
+		{
+			iterator	res(find(val.first));
+
+			if (*res != m_nullptr)
+				return (ft::make_pair(res, false));
+			else if (find(val.first, res._elem))
+				return (ft::make_pair(iterator(insert_node(make_node(val)
+												, res._elem)), true));
+			else
+				return (return (ft::make_pair(iterator(insert_node(make_node(val))), true));)
+		};
 		void					insert_multi(const_iterator first, const_iterator last);
-		iterator	erase_unique(const_iterator pos);
-		iterator	erase_multi(const_iterator first, const_iterator last);
-		iterator		is_there(const key_type& key);
-		const_iterator	is_there(const key_type& key);
+		{
+			while (first != last)
+			{
+				if (find(first._elem->_value->first) != m_nullptr)
+					insert_node(make_node(first._elem->_value));
+				++first;
+			};
+		};
+		void	erase(const_iterator pos)
+		{
+			iterator	node = this->begin();
+			while (node._elem != this->end())
+			{
+				if (node->_elem == pos->_elem)
+				{
+					delete_node(pos._elem);
+					return ;
+				}
+			}
+		};
+		void	erase_unique(const key_type& key)
+		{
+			iterator	erase_pos(find(key));
+			if (erase_pos._elem != m_nullptr)
+				delete_node(erase_pos._elem);
+		};
+		void	erase_multi(const_iterator first, const_iterator last)
+		{
+			while (first == last)
+				erase(first++);
+		};
+		iterator		find(const key_type& key, const nodeptr& start_node = _root)
+		{
+			while (start_node != m_nullptr)
+			{
+				if (value_compare.key_compare(start_node->_left->_value.first, key))
+					start_node = start_node->_right;
+				else if (value_compare.key_compare(key, start_node->_left->_value.first))
+					start_node = start_node->_left;
+				else
+					return (start_node);
+			}
+			reture (m_nullptr);
+		};
+		const_iterator	find(const key_type& key, const nodeptr& start_node = _root) const
+		{
+			while (start_node != m_nullptr)
+			{
+				if (value_compare.key_compare(start_node->_left->_value.first, key))
+					start_node = start_node->_right;
+				else if (value_compare.key_compare(key, start_node->_left->_value.first))
+					start_node = start_node->_left;
+				else
+					return (start_node);
+			}
+			reture (m_nullptr);
+		};
 		iterator		lower_bound(const key_type& key);
-		const_iterator	lower_bound(const key_type& key);
+		const_iterator	lower_bound(const key_type& key) const;
 		iterator		upper_bound(const key_type& key);
-		const_iterator	upper_bound(const key_type& key);
+		const_iterator	upper_bound(const key_type& key) const;
 	};
+
 	template <class V, class Compare, class Alloc>
 	void	tree<V, Compare, Alloc>::left_rotation(nodeptr x)
 	{
@@ -336,10 +413,10 @@ namespace ft
 	};
 
 	template <class V, class Compare, class Alloc>
-	void	tree<V, Compare, Alloc>::insert_node(nodeptr target_node)
+	nodeptr	tree<V, Compare, Alloc>::insert_node(nodeptr target_node, nodeptr criteria_node = _root)
 	{
+		this->_size += 1;
 		nodeptr	parent_node = _nil;
-		nodeptr	criteria_node = _root;
 		while (criteria_node != _nil)
 		{
 			parent_node = criteria_node;
@@ -414,6 +491,7 @@ namespace ft
 	template <class V, class Compare, class Alloc>
 	void	tree<V, Compare, Alloc>::delete_node(nodeptr target_node)
 	{
+		this->_size -= 1;
 		color_t	origin_color = target_node->_color;
 		nodeptr	replace_node = find_replace_node(target_node);
 		color_t	replace_node_color = replace_node->_color;
