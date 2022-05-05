@@ -1,6 +1,7 @@
 #ifndef TREE_HPP
 # define TREE_HPP
 
+# include "map_iterator.hpp"
 # include "iterator.hpp"
 # include "utils.hpp"
 # include "pair.hpp"
@@ -80,7 +81,7 @@ namespace ft
 		{ return (this->_elem->_value); };
 		pointer			operator->() const
 		{ return &(this->_elem->_value); };
-		tree_iterator	operator++()
+		tree_iterator+&	operator++()
 		{
 			tree_iterator	temp(*this);
 			++(*this);
@@ -91,7 +92,7 @@ namespace ft
 			this->_elem = tree_next_iterator<iterator_type>(this->_elem);
 			return (*this);
 		};
-		tree_iterator	operator--()
+		tree_iterator&	operator--()
 		{
 			tree_iterator	temp(*this);
 			--(*this);
@@ -102,9 +103,9 @@ namespace ft
 			this->_elem = tree_prev_iterator(this->_elem);
 			return (*this);
 		};
-		bool			operator==(const tree_iterator& x, const tree_iterator& y)
+		friend bool	operator==(const tree_iterator& x, const tree_iterator& y)
 		{ return (x._elem == y._elem); };
-		bool			operator!=(const tree_iterator& x, const tree_iterator& y)
+		friend bool	operator!=(const tree_iterator& x, const tree_iterator& y)
 		{ return !(x == y); };
 	};
 
@@ -134,41 +135,46 @@ namespace ft
 		tree_const_iterator(non_const_iter p)
 		: _elem(p._elem) {};
 		
+		pointer			get_np(void)
+		{ return (this->_elem); };
+
 		reference		operator*() const
 		{ return (this->_elem->_value); };
 		pointer			operator->() const
 		{ return &(this->_elem->_value); };
-		tree_const_iterator	operator++()
+		tree_const_iterator&	operator++()
 		{
 			tree_const_iterator	temp(*this);
 			++(*this);
 			return (temp);
 		};
-		tree_const_iterator	operator++(int)
+		tree_const_iterator		operator++(int)
 		{
 			this->_elem = tree_next_iterator(this->_elem);
 			return (*this);
 		};
-		tree_const_iterator	operator--()
+		tree_const_iterator&	operator--()
 		{
 			tree_const_iterator	temp(*this);
 			--(*this);
 			return (temp);
 		};
-		tree_const_iterator	operator--(int)
+		tree_const_iterator		operator--(int)
 		{
 			this->_elem = tree_prev_iterator(this->_elem);
 			return (*this);
 		};
-		bool			operator==(const tree_const_iterator& x, const tree_const_iterator& y)
+		friend bool	operator==(const tree_const_iterator& x, const tree_const_iterator& y)
 		{ return (x._elem == y._elem); };
-		bool			operator!=(const tree_const_iterator& x, const tree_const_iterator& y)
+		friend bool	operator!=(const tree_const_iterator& x, const tree_const_iterator& y)
 		{ return !(x == y); };
 	};
 
 	template <class nodeptr>
 	inline nodeptr	tree_next_iterator(nodeptr curr_node)
 	{
+		if (curr_node == this->_nil)
+			return (m_nullptr);
 		if (curr_node->_right != m_nullptr)
 		{
 			curr_node = curr_node->_right;
@@ -184,6 +190,13 @@ namespace ft
 	template <class nodeptr>
 	inline nodeptr	tree_prev_iterator(nodeptr curr_node)
 	{
+		if (curr_node == this->_nil)
+		{
+			curr_node = this->_root;
+			while (curr_node->_right != _nil)
+				curr_node = curr_node->_right;
+			return (curr_node);
+		}
 		if (curr_node->_left != m_nullptr)
 		{
 			curr_node = curr_node->_left;
@@ -247,9 +260,7 @@ namespace ft
 	private:
 		nodeptr	find_bro_node(nodeptr target_node) const
 		{
-			if (target_node == _root)
-				return (m_nullptr);
-			else if (target_node == target_node->_parent->_left)
+			if (target_node == target_node->_parent->_left)
 				return (target_node->_parent->_right);
 			else
 				return (target_node->_parent->_left);
@@ -277,17 +288,66 @@ namespace ft
 		void	left_rotation(nodeptr x);
 		void	right_rotation(nodeptr y);
 	public:
-		nodeptr	insert_node(nodeptr target_node, nodeptr criteria_node = _root));
+		nodeptr	insert_node(nodeptr target_node, nodeptr criteria_node = m_nullptr)
+		{
+			if (criteria_node == m_nullptr)
+				criteria_node = this->_root;
+			this->_size += 1;
+			nodeptr	parent_node = _nil;
+			while (criteria_node != _nil)
+			{
+				parent_node = criteria_node;
+				if (value_compare(target_node->_value, criteria_node->_value))
+					criteria_node = criteria_node->_left;
+				else
+					criteria_node = criteria_node->_right;
+			}
+			target_node->_parent = parent_node;
+			if (parent_node == _nil)
+				_root = target_node;
+			else if (value_compare(target_node->_value, parent_node->_value))
+				parent_node->_left = target_node;
+			else
+				parent_node->_right = target_node;
+			target_node->_left = _nil;
+			target_node->_right = _nil;
+			target_node->_color = Red;
+			insert_fixup(target_node);
+			return (target_node);
+		};
 		void	delete_node(nodeptr target_node);
 
 	///////////////// map relative function /////////////////
+		// Utilitys
+	private:
+		nodeptr		root(void) const { return (this->_root); };
+		nodeptr		nil(void) const { return (this->_nil); };
+		node_alloc	get_alloc(void) const { return (this->_alloc); };
+
+	////////////////////////////////////////////////////////
 	public:
+		iterator		begin(void)
+		{
+			nodeptr	res = _root;
+			while (res->_left != m_nullptr)
+				res = res->_left;
+			return (iterator(res));
+		};
+		const_iterator	begin(void) const
+		{
+			nodeptr	res = _root;
+			while (res->_left != m_nullptr)
+				res = res->_left;
+			return (const_iterator(res));
+		};
+		iterator		end(void) { return (_nil); };
+		const_iterator	end(void) const { return (_nil); };
 		size_type	size(void) { return (this->_size); };
 		size_type	max_size(void) { return (this->_alloc.max_size()); };
 
 		nodeptr		make_node(const value_type& val)
 		{
-			nodptr	res = _alloc.allocate(node(), 1);
+			nodeptr	res = _alloc.allocate(node(), 1);
 			_alloc.construct(res, node(val.first, val.second));
 			return (res);
 		};
@@ -296,85 +356,108 @@ namespace ft
 		{
 			iterator	res(find(val.first));
 
-			if (*res != m_nullptr)
+			if (res != this->end())
 				return (ft::make_pair(res, false));
 			else
 				return (ft::make_pair(iterator(insert_node(make_node(val))), true));
 		};
 		iterator				insert_unique(const_iterator pos, const value_type& val)
 		{
-			iterator	res(find(val.first));
-
-			if (*res != m_nullptr)
-				return (ft::make_pair(res, false));
-			else if (find(val.first, res._elem))
-				return (ft::make_pair(iterator(insert_node(make_node(val)
-												, res._elem)), true));
+			if (find(val.first, pos) == this->_nil)
+				return (insert_node(val, pos->get_np()));
+			else if (find(val.first) == this->_nil)
+				return (insert_node(val));
 			else
-				return (return (ft::make_pair(iterator(insert_node(make_node(val))), true));)
+				return (this->end());
 		};
 		void					insert_multi(const_iterator first, const_iterator last);
 		{
-			while (first != last)
+			iterator	start = first;
+			iterator	end = last;
+			while (start != end)
 			{
-				if (find(first._elem->_value->first) != m_nullptr)
-					insert_node(make_node(first._elem->_value));
-				++first;
+				if (find(start->get_np()->_value->first) == this->_nil)
+					insert_node(make_node(start->get_np()->_value));
+				++start;
 			};
 		};
-		void	erase(const_iterator pos)
+		void	erase_unique_iter(const_iterator pos)
 		{
 			iterator	node = this->begin();
-			while (node._elem != this->end())
+			while (node != this->end())
 			{
-				if (node->_elem == pos->_elem)
+				if (node->get_np() == pos->get_np())
 				{
-					delete_node(pos._elem);
+					delete_node(pos->get_np());
 					return ;
 				}
+				++node;
 			}
 		};
 		void	erase_unique(const key_type& key)
 		{
 			iterator	erase_pos(find(key));
-			if (erase_pos._elem != m_nullptr)
-				delete_node(erase_pos._elem);
+			if (erase_pos->get_np() != this->_nil)
+				delete_node(erase_pos->get_np());
 		};
 		void	erase_multi(const_iterator first, const_iterator last)
 		{
-			while (first == last)
-				erase(first++);
+			iterator	start = first;
+			iterator	end = last;
+			while (start != end)
+				erase(start++);
 		};
 		iterator		find(const key_type& key, const nodeptr& start_node = _root)
 		{
-			while (start_node != m_nullptr)
+			while (start_node != _nil && start_node != m_nullptr)
 			{
-				if (value_compare.key_compare(start_node->_left->_value.first, key))
+				if (value_compare.key_compare(start_node->_value->first, key))
 					start_node = start_node->_right;
-				else if (value_compare.key_compare(key, start_node->_left->_value.first))
+				else if (value_compare.key_compare(key, start_node->_value->first))
 					start_node = start_node->_left;
 				else
 					return (start_node);
 			}
-			reture (m_nullptr);
+			reture (iterator(_nil));
 		};
-		const_iterator	find(const key_type& key, const nodeptr& start_node = _root) const
+		iterator		lower_bound(const key_type& key)
 		{
-			while (start_node != m_nullptr)
+			iterator	res = this->begin();
+			iterator	stop = this->end();
+			while(res != stop)
 			{
-				if (value_compare.key_compare(start_node->_left->_value.first, key))
-					start_node = start_node->_right;
-				else if (value_compare.key_compare(key, start_node->_left->_value.first))
-					start_node = start_node->_left;
-				else
-					return (start_node);
+				if (res->first <= key)
+					break;
+				++res;
 			}
-			reture (m_nullptr);
+			return (res);
 		};
-		iterator		lower_bound(const key_type& key);
-		const_iterator	lower_bound(const key_type& key) const;
-		iterator		upper_bound(const key_type& key);
-		const_iterator	upper_bound(const key_type& key) const;
+		iterator		upper_bound(const key_type& key)
+		{
+			iterator	res = this->begin();
+			iterator	stop = this->end();
+			while(res != stop)
+			{
+				if (res->first < key)
+					break;
+				++res;
+			}
+			return (res);
+		};
+		template<class W>
+		void	swap_ele(W &x, W &y)
+		{
+			W	t = x;
+			x = y;
+			y = t;
+		};
+		void	swap(tree& x)
+		{
+			swap_ele(_size, x._size);
+			swap_ele(_root, x._root);
+			swap_ele(_nil, x._nil);
+			swap_ele(_alloc, x._alloc);
+		};
 	};
 
 	template <class V, class Compare, class Alloc>
@@ -412,31 +495,6 @@ namespace ft
 		y->_parent = x;
 	};
 
-	template <class V, class Compare, class Alloc>
-	nodeptr	tree<V, Compare, Alloc>::insert_node(nodeptr target_node, nodeptr criteria_node = _root)
-	{
-		this->_size += 1;
-		nodeptr	parent_node = _nil;
-		while (criteria_node != _nil)
-		{
-			parent_node = criteria_node;
-			if (value_compare(target_node->_value, criteria_node->_value))
-				criteria_node = criteria_node->_left;
-			else
-				criteria_node = criteria_node->_right;
-		}
-		target_node->_parent = parent_node;
-		if (parent_node == _nil)
-			_root = target_node;
-		else if (value_compare(target_node->_value, parent_node->_value))
-			parent_node->_left = target_node;
-		else
-			parent_node->_right = target_node;
-		target_node->_left = _nil;
-		target_node->_right = _nil;
-		target_node->_color = Red;
-		insert_fixup(target_node);
-	};
 	template <class V, class Compare, class Alloc>
 	void	tree<V, Compare, Alloc>::insert_fixup(nodeptr target_node)
 	{
@@ -629,6 +687,7 @@ namespace ft
 			all_clear(node->_left);
 			all_clear(node->_right);
 			remove_node(node);
+			_size = 0;
 		}
 	};
 };

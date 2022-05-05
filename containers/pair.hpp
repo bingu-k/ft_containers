@@ -6,30 +6,31 @@ namespace ft
 	template <class T1, class T2>
 	struct pair
 	{
-		// Typedef
-		typedef T1	first_type;
-		typedef T2	second_type;
+		public:
+			// Typedef
+			typedef T1	first_type;
+			typedef T2	second_type;
 
-		// Variable
-		first_type	first;
-		second_type	second;
+			// Variable
+			first_type	first;
+			second_type	second;
 
-		// Constructor
-		pair(void) : first(), second() {};
-		template <class U, class V>
-		pair(const pair<U, V>& pr) : first(pr.first), second(pr.second) {};
-		pair(const first_type& a, const second_type& b) : first(a), second(b) {};
+			// Constructor
+			pair(void) : first(), second() {};
+			template <class U, class V>
+			pair(const pair<U, V>& pr) : first(pr.first), second(pr.second) {};
+			pair(const first_type& a, const second_type& b) : first(a), second(b) {};
 
-		// Assign Operator
-		pair&	operator=(const pair& pr)
-		{
-			if (this != &pr)
+			// Assign Operator
+			pair&	operator=(const pair& pr)
 			{
-				first = pr.first;
-				second = pr.second;
-			}
-			return (*this);
-		};
+				if (this != &pr)
+				{
+					first = pr.first;
+					second = pr.second;
+				}
+				return (*this);
+			};
 	};
 
 	// Relational Operators

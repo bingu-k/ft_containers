@@ -3,9 +3,6 @@
 
 # include <memory>
 # include <iostream>
-# include "pair.hpp"
-# include "iterator.hpp"
-# include "node.hpp"
 
 namespace ft
 {

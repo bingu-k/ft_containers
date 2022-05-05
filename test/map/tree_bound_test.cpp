@@ -13,13 +13,15 @@ int main(void)
 	a.insert(pair<char, int>('e', 500));
 	a.insert(pair<char, int>('b', 200));
 	a.insert(pair<char, int>('c', 300));
+	a.insert(pair<char, int>('f', 300));
+	
 
 	std::cout << "\tmap original a" << std::endl;
 	for (pair<char, int> q : a)
 		std::cout << q.first << ":" << q.second << std::endl;
     
-    map<char, int>::iterator    low = a.lower_bound('d');
-    map<char, int>::iterator    upp = a.upper_bound('d');
+    map<char, int>::iterator    low = a.lower_bound('c');
+    map<char, int>::iterator    upp = a.upper_bound('c');
 
     std::cout << (*low).first << "\t: " << (*low).second << std::endl;
     std::cout << (*upp).first << "\t: " << (*upp).second << std::endl;
