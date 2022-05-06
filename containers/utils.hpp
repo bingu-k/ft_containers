@@ -3,6 +3,7 @@
 
 # include <cstddef>
 # include <functional>
+# include <memory>
 
 namespace ft
 {
@@ -123,7 +124,7 @@ namespace ft
 		return (true);
 	};
 	template <class InputIter1, class InputIter2>
-	bool equal (InputIter1 first1, InputIter1 last1, InputIter2 first2)
+	bool	equal(InputIter1 first1, InputIter1 last1, InputIter2 first2)
 	{
 		typedef typename	iterator_traits<InputIter1>::value_type v1;
 		typedef typename	iterator_traits<InputIter2>::value_type v2;
@@ -194,6 +195,115 @@ namespace ft
 	// map은 내부가 tree로 이뤄져있기 때문에 우리는 node에 대한 할당을 해주어야한다.
 	// 그렇게 되면 우리가 node에 대한 할당은 rebind를 통해 node에 관한 Allocator를 생성하고
 	// 생성된 Allocator로 할당을 해주는 상황이 되야하기 때문에 rebind를 사용해야한다.
+
+	// pair
+	template <class T1, class T2>
+	struct pair
+	{
+		public:
+			// Typedef
+			typedef T1	first_type;
+			typedef T2	second_type;
+
+			// Variable
+			first_type	first;
+			second_type	second;
+
+			// Constructor
+			pair(void) : first(), second() {};
+			template <class U, class V>
+			pair(const pair<U, V>& pr) : first(pr.first), second(pr.second) {};
+			pair(const first_type& a, const second_type& b) : first(a), second(b) {};
+
+			// Assign Operator
+			pair&	operator=(const pair& pr)
+			{
+				if (this != &pr)
+				{
+					first = pr.first;
+					second = pr.second;
+				}
+				return (*this);
+			};
+	};
+
+	// Relational Operators
+	template <class T1, class T2>
+	bool	operator==(const pair<T1, T2>& lhs, const pair<T1, T2>& rhs)
+	{ return (lhs.first==rhs.first && lhs.second==rhs.second); };
+	template <class T1, class T2>
+	bool	operator!=(const pair<T1, T2>& lhs, const pair<T1, T2>& rhs)
+	{ return !(lhs == rhs); };
+	template <class T1, class T2>
+	bool	operator<(const pair<T1, T2>& lhs, const pair<T1, T2>& rhs)
+	{ return (lhs.first < rhs.first || (!(rhs.first < lhs.first) && lhs.second < rhs.second)); };
+	template <class T1, class T2>
+	bool	operator<=(const pair<T1, T2>& lhs, const pair<T1, T2>& rhs)
+	{ return !(rhs > lhs); };
+	template <class T1, class T2>
+	bool	operator>(const pair<T1, T2>& lhs, const pair<T1, T2>& rhs)
+	{ return (rhs < lhs); };
+	template <class T1, class T2>
+	bool	operator>=(const pair<T1, T2>& lhs, const pair<T1, T2>& rhs)
+	{ return !(lhs < rhs); };
+
+	// Make Pair
+	template <class T1, class T2>
+	pair<T1, T2> make_pair (T1 x, T2 y)
+	{ return (pair<T1, T2>(x, y)); };
+
+	// swap
+	template <class T>
+	void	swap_something(T& a, T& b)
+	{
+		T&	temp = a;
+		a = b;
+		b = temp;
+	};
+
+	// value compare
+	template <class Key, class Value, class Compare>
+	class _value_compare : private Compare			// value_compare 상속
+	{
+		public:
+			_value_compare() : Compare() {};
+			_value_compare() : Compare(Compare c) {};
+			
+			const Compare&	key_comp() const { return (*this); };
+
+			bool	operator()(const Value& x, const Value& y) const
+			{ return (Compare(x.first, y.first)); };
+			bool	operator()(const Key& x, const Value& y) const
+			{ return (Compare(x, y.first)); };
+			bool	operator()(const Value& x, const Key& y) const
+			{ return (Compare(x.first, y)); };
+
+	};
+
+	// node
+	enum node_color
+	{
+		Black,
+		Red
+	};
+	template <class Value>
+	struct node
+	{
+		Value			_value;
+		node_color		_color;
+		node<Value>*	_parent;
+		node<Value>*	_left;
+		node<Value>*	_right;
+		
+		node(Value val = Value())
+		{
+			_value = val;
+			_color = Red;
+			_parent = m_nullptr;
+			_left = m_nullptr;
+			_right = m_nullptr;
+		};
+	};
 }
 
 #endif
