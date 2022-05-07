@@ -4,6 +4,7 @@
 # include <cstddef>
 # include <functional>
 # include <memory>
+# include "iterator.hpp"
 
 namespace ft
 {
@@ -220,8 +221,8 @@ namespace ft
 			{
 				if (this != &pr)
 				{
-					first = pr.first;
-					second = pr.second;
+					this->first = pr.first;
+					this->second = pr.second;
 				}
 				return (*this);
 			};
@@ -262,21 +263,22 @@ namespace ft
 	};
 
 	// value compare
-	template <class Key, class Value, class Compare>
-	class _value_compare : private Compare			// value_compare 상속
+	template <class Key, class Value, class _Compare>
+	class _value_compare : private _Compare			// value_compare 상속
 	{
+		_Compare	comp;
 		public:
-			_value_compare() : Compare() {};
-			_value_compare() : Compare(Compare c) {};
+			_value_compare() : comp() {};
+			_value_compare(_Compare c) : comp(c) {};
 			
-			const Compare&	key_comp() const { return (*this); };
+			const _Compare&	key_comp() const { return (*this); };
 
 			bool	operator()(const Value& x, const Value& y) const
-			{ return (Compare(x.first, y.first)); };
+			{ return (_Compare(x.first, y.first)); };
 			bool	operator()(const Key& x, const Value& y) const
-			{ return (Compare(x, y.first)); };
+			{ return (_Compare(x, y.first)); };
 			bool	operator()(const Value& x, const Key& y) const
-			{ return (Compare(x.first, y)); };
+			{ return (_Compare(x.first, y)); };
 
 	};
 
@@ -286,18 +288,17 @@ namespace ft
 		Black,
 		Red
 	};
-	template <class Value>
+	template <class T>
 	struct node
 	{
-		Value			_value;
-		node_color		_color;
-		node<Value>*	_parent;
-		node<Value>*	_left;
-		node<Value>*	_right;
+		T			_value;
+		node_color	_color;
+		node<T>*	_parent;
+		node<T>*	_left;
+		node<T>*	_right;
 		
-		node(Value val = Value())
+		node(T val = T()) : _value(val)
 		{
-			_value = val;
 			_color = Red;
 			_parent = m_nullptr;
 			_left = m_nullptr;

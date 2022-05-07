@@ -42,7 +42,7 @@ namespace ft
 		map_iterator&	operator++()
 		{
 			++(this->_elem);
-			return (*this)
+			return (*this);
 		};
 		map_iterator&	operator++(int)
 		{
@@ -53,7 +53,7 @@ namespace ft
 		map_iterator&	operator--()
 		{
 			--(this->_elem);
-			return (*this)
+			return (*this);
 		};
 		map_iterator&	operator--(int)
 		{
@@ -61,9 +61,9 @@ namespace ft
 			--(*this);
 			return (res);
 		};
-		bool	operator==(const map_iterator& x, const map_iterator& y)
+		friend bool	operator==(const map_iterator& x, const map_iterator& y)
 		{ return (x._elem == y._elem); };
-		bool	operator!=(const map_iterator& x, const map_iterator& y)
+		friend bool	operator!=(const map_iterator& x, const map_iterator& y)
 		{ return (x._elem != y._elem); };
 	};
 
@@ -104,7 +104,7 @@ namespace ft
 		map_const_iterator&	operator++()
 		{
 			++(this->_elem);
-			return (*this)
+			return (*this);
 		};
 		map_const_iterator&	operator++(int)
 		{
@@ -115,7 +115,7 @@ namespace ft
 		map_const_iterator&	operator--()
 		{
 			--(this->_elem);
-			return (*this)
+			return (*this);
 		};
 		map_const_iterator&	operator--(int)
 		{
@@ -123,9 +123,9 @@ namespace ft
 			--(*this);
 			return (res);
 		};
-		bool	operator==(const map_const_iterator& x, const map_const_iterator& y)
+		friend bool	operator==(const map_const_iterator& x, const map_const_iterator& y)
 		{ return (x._elem == y._elem); };
-		bool	operator!=(const map_const_iterator& x, const map_const_iterator& y)
+		friend bool	operator!=(const map_const_iterator& x, const map_const_iterator& y)
 		{ return (x._elem != y._elem); };
 	};
 
@@ -133,31 +133,31 @@ namespace ft
 	template <class InputIter>
 	inline InputIter&	tree_next_iter(InputIter me)
 	{
-		if (me->_right != m_nullptr)		// end()가 아니면 오른쪽 자식 하위 노드중 가장 작은것.
+		if (me.get_nodeptr()->_right != m_nullptr)		// end()가 아니면 오른쪽 자식 하위 노드중 가장 작은것.
 		{
-			me = me->_right;
-			while (me->_left != m_nullptr)
-				me = me->_left;
+			me = me.get_nodeptr()->_right;
+			while (me.get_nodeptr()->_left != m_nullptr)
+				me = me.get_nodeptr()->_left;
 			return (me);
 		}
-		while (me->_parent->_right == me) // 본인이 오른쪽 자식이면 하위노드중 가장 큰 값.
-			me = me->_parent;
-		return (me->_parent);
+		while (me.get_nodeptr()->_parent->_right == me) // 본인이 오른쪽 자식이면 하위노드중 가장 큰 값.
+			me = me.get_nodeptr()->_parent;
+		return (me.get_nodeptr()->_parent);
 	};
 
 	template <class InputIter>
 	inline InputIter&	tree_prev_iter(InputIter me)
 	{
-		if (me->_left != m_nullptr)		// end()가 아니면 왼쪽 자식 하위 노드중 가장 큰것.
+		if (me.get_nodeptr()->_left != m_nullptr)		// end()가 아니면 왼쪽 자식 하위 노드중 가장 큰것.
 		{
-			me = me->_left;
-			while (me->_right != m_nullptr)
-				me = me->_right;
+			me = me.get_nodeptr()->_left;
+			while (me.get_nodeptr()->_right != m_nullptr)
+				me = me.get_nodeptr()->_right;
 			return (me);
 		}
-		while ((me->_parent->_left == me)) // 본인이 왼쪽자식이면 하위노드중 가장 작은 값.
-			me = me->_parent;
-		return (me->_parent);
+		while (me.get_nodeptr()->_parent->_left == me) // 본인이 왼쪽자식이면 하위노드중 가장 작은 값.
+			me = me.get_nodeptr()->_parent;
+		return (me.get_nodeptr()->_parent);
 	};
 
 	template <class N, class P>
@@ -170,10 +170,12 @@ namespace ft
 		typedef ft::iterator<iterator_category(), value_type>	iter;
 		typedef typename iter::pointer							pointer;
 		typedef typename iter::reference						reference;
+		typedef ft::iterator<iterator_category(), nodeptr>		iter;
+		typedef value_type*										pointer;
+		typedef value_type&										reference;
 		typedef typename iter::difference_type					difference_type;
 	private:
 		nodeptr	_elem;
-		nodeptr	get_nodeptr(void) const { return (this->_elem); };
 	public:
 		tree_iterator(nodeptr elem = m_nullptr)
 		: _elem(elem) {};
@@ -187,6 +189,7 @@ namespace ft
 		};
 		~tree_iterator() {};
 
+		nodeptr	get_nodeptr(void) const { return (this->_elem); };
 		reference	operator*() const
 		{ return (this->get_nodeptr()->_value); };
 		pointer		operator->() const
@@ -213,9 +216,9 @@ namespace ft
 			tree_prev_iter(*this);
 			return (res);
 		};
-		bool	operator==(const tree_iterator& x, const tree_iterator& y)
-		{ return (&(x.get_nodeptr()) == &(y.get_nodeptr())); };
-		bool	operator!=(const tree_iterator& x, const tree_iterator& y)
+		friend bool	operator==(const tree_iterator& x, const tree_iterator& y)
+		{ return ((x.get_nodeptr()) == (y.get_nodeptr())); };
+		friend bool	operator!=(const tree_iterator& x, const tree_iterator& y)
 		{ return !(x == y); };
 	};
 	template <class N, class P>
@@ -269,13 +272,14 @@ namespace ft
 		};
 		tree_const_iterator&	operator--(int)
 		{
+			nodeptr	res(this->get_nodeptr());
 			this->_elem = tree_prev_iter(this->get_nodeptr());
 			tree_prev_iter(*this);
 			return (res);
 		};
-		bool	operator==(const tree_const_iterator& x, const tree_const_iterator& y)
+		friend bool	operator==(const tree_const_iterator& x, const tree_const_iterator& y)
 		{ return (&(x.get_nodeptr()) == &(y.get_nodeptr())); };
-		bool	operator!=(const tree_const_iterator& x, const tree_const_iterator& y)
+		friend bool	operator!=(const tree_const_iterator& x, const tree_const_iterator& y)
 		{ return !(x == y); };
 	};
 }

@@ -162,10 +162,6 @@ namespace ft
 			_root->_color = Black;
 		};
 
-		// Find Node
-		nodeptr	find_node(node_type n)
-		{};
-
 		// Delete
 		nodeptr	find_replace_node(nodeptr r)
 		{
@@ -293,15 +289,6 @@ namespace ft
 			}
 			x->_color = Black;
 		};
-	};
-
-	template <class T>
-	class tree_iterator
-	{
-	public:
-		typedef T											iterator_type;
-		typedef iterator<bidirectional_iterator_tag(), T>	iter;
-		typedef 
 	};
 };
 

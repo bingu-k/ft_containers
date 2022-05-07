@@ -3,7 +3,6 @@
 
 # include "iterator.hpp"
 # include "utils.hpp"
-# include "vector_iterator.hpp"
 
 namespace ft
 {

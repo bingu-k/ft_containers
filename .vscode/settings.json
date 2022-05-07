@@ -79,7 +79,8 @@
 		"random": "cpp",
 		"filesystem": "cpp",
 		"__undef_macros": "cpp",
-		"__memory": "cpp"
+		"__memory": "cpp",
+		"*.ipp": "cpp"
 	},
 	"C_Cpp.dimInactiveRegions": false
 }
