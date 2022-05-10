@@ -36,10 +36,10 @@ namespace ft
 	private:
 		typedef _value_compare<key_type, value_type, key_compare>
 																_vc;
-		typedef tree<value_type, _vc, allocator_type>			base;
+		typedef tree<const key_type, mapped_type, _vc, allocator_type>
+																base;
 		typedef typename base::iterator							tree_iter;
 		typedef typename base::const_iterator					const_tree_iter;
-		value_compare	_comp;
 		allocator_type	_alloc;
 		base			_tree;
 		base&			get_tree(void) { return (this->_tree); };
@@ -56,25 +56,24 @@ namespace ft
 		// Constructor
 		explicit map(const key_compare& comp = key_compare()
 					, const allocator_type& alloc = allocator_type())
-		: _comp(value_compare(comp)), _alloc(alloc), _tree(comp, alloc)
+		: _alloc(alloc), _tree(comp, alloc)
 		{};
 		template <class InputIterator>
 		map(InputIterator first, InputIterator last,
 			const key_compare& comp = key_compare(),
 			const allocator_type& alloc = allocator_type())
-		: _comp(value_compare(comp)), _alloc(alloc), _tree(comp, alloc)
+		: _alloc(alloc), _tree(comp, alloc)
 		{ this->insert(first, last); };
 		map(const map& x)
-		: _comp(x.value_comp()), _alloc(x.get_allocator()), _tree(_comp, _alloc)
-		{ this->insert(x.begin(). x.end()); };
+		: _alloc(x.get_allocator()), _tree(x._tree)
+		{};
 
 		// Copy Constructor
 		map&	operator=(const map& x)
 		{
 			if (this == &x)
 			{
-				this->_comp = x.value_comp();
-				this->_alloc = x.get_alloc();
+				this->_alloc = x.get_allocator();
 				this->insert(x.begin(), x.end());
 			}
 			return (*this);
@@ -85,9 +84,9 @@ namespace ft
 
 		// Iterators
 		iterator		begin()			{ return (iterator(_tree.begin())); };
-		const_iterator	begin() const	{ return (iterator(_tree.begin())); };
+		const_iterator	begin() const	{ return (const_iterator(_tree.begin())); };
 		iterator		end()			{ return (iterator(_tree.end())); };
-		const_iterator	end() const		{ return (iterator(_tree.end())); };
+		const_iterator	end() const		{ return (const_iterator(_tree.end())); };
 		reverse_iterator		rbegin()		{ return (iterator(_tree.end())); };
 		const_reverse_iterator	rbegin() const	{ return (iterator(_tree.end())); };
 		reverse_iterator		rend()			{ return (iterator(_tree.begin())); };
@@ -111,19 +110,19 @@ namespace ft
 				return (ft::pair<iterator,bool>(iterator(res_type), true));
 		};
 		iterator			insert(iterator position, const value_type& val)
-		{ return (iterator(_tree.insert_pos(position.get_tree_iter(), val))); };
+		{ return (iterator(_tree.insert_pos(position, val))); };
 		template <class InputIterator>
 		void				insert(InputIterator first, InputIterator last)
-		{ _tree.insert_multi(first.get_tree_iter(), last.get_tree_iter()); };
+		{ _tree.insert_multi(first, last); };
 		void		erase(iterator position)
-		{ _tree.remove_pos(position.get_tree_iter()); };
+		{ _tree.remove_pos(position); };
 		size_type	erase(const key_type& k)
 		{
 			_tree.remove_unique(k);
 			return (1);
 		};
 		void		erase(iterator first, iterator last)
-		{ _tree.remove_multi(first.get_tree_iter(), last.get_tree_iter()); };
+		{ _tree.remove_multi(first, last); };
 		void	swap(map& x)
 		{
 			swap_something(this->_alloc, x.get_allocator());
@@ -134,7 +133,7 @@ namespace ft
 
 		// Observers
 		key_compare		key_comp() const	{ return (key_compare()); };
-		value_compare	value_comp() const	{ return (this->_comp); };
+		value_compare	value_comp() const	{ return (value_compare()); };
 
 		// Operations
 		iterator		find(const key_type& k)
@@ -143,7 +142,7 @@ namespace ft
 		{ return (const_iterator(_tree.find(k))); };
 		size_type	count(const key_type& k) const
 		{
-			if (_tree.find(k) == this->end().get_tree_iter())
+			if (_tree.find(k) == this->end().base())
 				return (0);
 			else
 				return (1);

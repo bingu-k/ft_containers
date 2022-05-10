@@ -212,18 +212,15 @@ namespace ft
 
 			// Constructor
 			pair(void) : first(), second() {};
+			pair(first_type const& a, second_type const& b) : first(a), second(b) {};
 			template <class U, class V>
-			pair(const pair<U, V>& pr) : first(pr.first), second(pr.second) {};
-			pair(const first_type& a, const second_type& b) : first(a), second(b) {};
+			pair(pair<U, V> const& pr) : first(pr.first), second(pr.second) {};
 
 			// Assign Operator
-			pair&	operator=(const pair& pr)
+			pair&	operator=(pair const& pr)
 			{
-				if (this != &pr)
-				{
-					this->first = pr.first;
-					this->second = pr.second;
-				}
+				this->first = pr.first;
+				this->second = pr.second;
 				return (*this);
 			};
 	};
@@ -274,11 +271,11 @@ namespace ft
 			const _Compare&	key_comp() const { return (*this); };
 
 			bool	operator()(const Value& x, const Value& y) const
-			{ return (_Compare(x.first, y.first)); };
+			{ return (comp(x.first, y.first)); };
 			bool	operator()(const Key& x, const Value& y) const
-			{ return (_Compare(x, y.first)); };
+			{ return (comp(x, y.first)); };
 			bool	operator()(const Value& x, const Key& y) const
-			{ return (_Compare(x.first, y)); };
+			{ return (comp(x.first, y)); };
 
 	};
 
@@ -291,13 +288,13 @@ namespace ft
 	template <class T>
 	struct node
 	{
-		T			_value;
+		T			_val;
 		node_color	_color;
 		node<T>*	_parent;
 		node<T>*	_left;
 		node<T>*	_right;
 		
-		node(T val = T()) : _value(val)
+		node(T val = T()) : _val(val)
 		{
 			_color = Red;
 			_parent = m_nullptr;
