@@ -44,13 +44,12 @@ int		main(void)
 	// 	std::cout << "- " << printPair(itq, false) << std::endl;
 	
 	TESTED_NAMESPACE::map<T1, T2> mp(lst.begin(), lst.end());
+	// TESTED_NAMESPACE::map<T1, T2>::iterator itq = mp.begin(), iteq = mp.end();
+	// std::cout << std::endl << "Content is:" << std::endl;
+	// for (; itq != iteq; itq++)
+	// 	std::cout << "- " << printPair(itq, false) << std::endl;
+
 	TESTED_NAMESPACE::map<T1, T2>::iterator it = mp.begin(), ite = mp.end();
-
-	TESTED_NAMESPACE::map<T1, T2>::iterator itq = mp.begin(), iteq = mp.end();
-	std::cout << std::endl << "Content is:" << std::endl;
-	for (; itq != iteq; itq++)
-		std::cout << "- " << printPair(itq, false) << std::endl;
-
 	TESTED_NAMESPACE::map<T1, T2> mp_range(it, --(--ite));
 	for (int i = 0; it != ite; ++it)
 		it->second = ++i * 5;
@@ -59,6 +58,13 @@ int		main(void)
 	TESTED_NAMESPACE::map<T1, T2> mp_copy(mp);
 	for (int i = 0; it != ite; ++it)
 		it->second = ++i * 7;
+
+	std::cout << "mp map" << std::endl;
+	mp.inorder();
+	std::cout << "mp_range map" << std::endl;
+	mp_range.inorder();
+	std::cout << "mp_copy map" << std::endl;
+	mp_copy.inorder();
 
 	std::cout << "\t-- PART ONE --" << std::endl;
 	printSize(mp);

@@ -2,7 +2,7 @@
 # define TREE_HPP
 
 # include "map_iterator.hpp"
-
+# include <iostream>
 
 namespace ft
 {
@@ -457,6 +457,19 @@ namespace ft
 				}
 			}
 			x->_color = Black;
+		};
+
+	public:
+		void	inorder(nodeptr	node)
+		{
+			if (node == nil())
+				return ;
+			else
+			{
+				inorder(node->_left);
+				std::cout << "node\tkey : " << node->_val.first << "\tvalue : " << node->_val.second << std::endl;
+				inorder(node->_right);
+			}
 		};
 	};
 }

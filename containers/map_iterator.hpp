@@ -129,36 +129,6 @@ namespace ft
 	};
 
 	// tree_iterator
-	template <class nodeptr>
-	inline nodeptr	tree_next_iter(nodeptr& me)
-	{
-		if (me->_right != m_nullptr)
-		{	// end()가 아니면 오른쪽 자식 하위 노드중 가장 작은것.
-			me = me->_right;
-			while (me->_left != m_nullptr)
-				me = me->_left;
-			return (me);
-		}
-		while (me->_parent->_right == me) // 본인이 오른쪽 자식이면 하위노드중 가장 큰 값.
-			me = me->_parent;
-		return (me->_parent);
-	};
-
-	template <class nodeptr>
-	inline nodeptr	tree_prev_iter(nodeptr& me)
-	{
-		if (me->_left != m_nullptr)
-		{	// end()가 아니면 왼쪽 자식 하위 노드중 가장 큰것.
-			me = me->_left;
-			while (me->_right != m_nullptr)
-				me = me->_right;
-			return (me);
-		}
-		while (me->_parent->_left == me) // 본인이 왼쪽자식이면 하위노드중 가장 작은 값.
-			me = me->_parent;
-		return (me->_parent);
-	};
-
 	template <class N, class P>
 	class tree_iterator
 	{
@@ -194,21 +164,33 @@ namespace ft
 		nodeptr	get_nodeptr(void) const { return (this->_elem); };
 		nodeptr	get_root(void) const { return (this->_root); };
 		nodeptr	get_nil(void) const { return (this->_nil); };
+		nodeptr	get_end(void)
+		{
+			nodeptr	node = _root;
+			while (node->_right != this->_nil)
+				node = node->_right;
+			return (node);
+		};
 		reference	operator*() const
 		{ return (this->get_nodeptr()->_val); };
 		pointer		operator->() const
 		{ return (&(this->get_nodeptr()->_val)); };
 		tree_iterator&	operator++()
 		{
-			if (this->_elem->_right != this->_nil)
+			if (this->_elem == this->get_end())
+				this->_elem = this->get_nil();
+			else if (this->_elem->_right != this->_nil)
 			{
 				this->_elem = this->_elem->_right;
 				while (this->_elem->_left != this->_nil)
 					this->_elem = this->_elem->_left;
 			}
-			while (this->_elem->_parent->_right == this->_elem)
+			else
+			{
+				while (this->_elem->_parent->_left != this->_elem)
+					this->_elem = this->_elem->_parent;
 				this->_elem = this->_elem->_parent;
-			this->_elem = this->_elem->_parent;
+			}
 			return (*this);
 		};
 		tree_iterator	operator++(int)
@@ -219,20 +201,16 @@ namespace ft
 		};
 		tree_iterator&	operator--()
 		{
-			if (this->_elem == this->_nil)
-			{
-				this->_elem = this->get_root();
-				while (this->_elem->_right == this->_nil)
+			if (this->_elem == this->get_nil())
+				this->_elem = this->get_end();
+			else if (this->_elem->_left != this->_nil)
+			{	// end()가 아니면 왼쪽 자식 하위 노드중 가장 큰것.
+				this->_elem = this->_elem->_left;
+				while (this->_elem->_right != this->_nil)
 					this->_elem = this->_elem->_right;
 			}
 			else
 			{
-				if (this->_elem->_left != this->_nil)
-				{	// end()가 아니면 왼쪽 자식 하위 노드중 가장 큰것.
-					this->_elem = this->_elem->_left;
-					while (this->_elem->_right != this->_nil)
-						this->_elem = this->_elem->_right;
-				}
 				while (this->_elem->_parent->_left == this->_elem) // 본인이 왼쪽자식이면 하위노드중 가장 작은 값.
 					this->_elem = this->_elem->_parent;
 				this->_elem = this->_elem->_parent;
@@ -287,13 +265,33 @@ namespace ft
 		nodeptr	get_nodeptr(void) const { return (this->_elem); };
 		nodeptr	get_root(void) const { return (this->_root); };
 		nodeptr	get_nil(void) const { return (this->_nil); };
+		nodeptr	get_end(void)
+		{
+			nodeptr	node = _root;
+			while (node->_right == this->_nil)
+				node = node->_right;
+			return (node);
+		};
 		reference	operator*() const
 		{ return (this->get_nodeptr()->_val); };
 		pointer		operator->() const
 		{ return (&(this->get_nodeptr()->_val)); };
 		tree_const_iterator&	operator++()
 		{
-			this->_elem = tree_next_iter(this->_elem);
+			if (this->_elem == this->get_end())
+				this->_elem = this->get_nil();
+			else if (this->_elem->_right != this->_nil)
+			{
+				this->_elem = this->_elem->_right;
+				while (this->_elem->_left != this->_nil)
+					this->_elem = this->_elem->_left;
+			}
+			else
+			{
+				while (this->_elem->_parent->_left != this->_elem)
+					this->_elem = this->_elem->_parent;
+				this->_elem = this->_elem->_parent;
+			}
 			return (*this);
 		};
 		tree_const_iterator	operator++(int)
@@ -304,14 +302,20 @@ namespace ft
 		};
 		tree_const_iterator&	operator--()
 		{
-			if (this->_elem == this->_nil)
-			{
-				this->_elem = this->get_root();
-				while (this->_elem->_right == this->_nil)
+			if (this->_elem == this->get_nil())
+				this->_elem = this->get_end();
+			else if (this->_elem->_left != this->_nil)
+			{	// end()가 아니면 왼쪽 자식 하위 노드중 가장 큰것.
+				this->_elem = this->_elem->_left;
+				while (this->_elem->_right != this->_nil)
 					this->_elem = this->_elem->_right;
 			}
 			else
-				this->_elem = tree_prev_iter(this->_elem);
+			{
+				while (this->_elem->_parent->_left == this->_elem) // 본인이 왼쪽자식이면 하위노드중 가장 작은 값.
+					this->_elem = this->_elem->_parent;
+				this->_elem = this->_elem->_parent;
+			}
 			return (*this);
 		};
 		tree_const_iterator	operator--(int)

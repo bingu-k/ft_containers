@@ -170,6 +170,10 @@ namespace ft
 
 		// Allocator
 		allocator_type	get_allocator() const	{ return (this->_alloc); };
+
+		// order
+		void	inorder(void)
+		{ _tree.inorder(_tree.root()); }
 	};
 }
 
