@@ -59,12 +59,12 @@ int		main(void)
 	for (int i = 0; it != ite; ++it)
 		it->second = ++i * 7;
 
-	std::cout << "mp map" << std::endl;
-	mp.inorder();
-	std::cout << "mp_range map" << std::endl;
-	mp_range.inorder();
-	std::cout << "mp_copy map" << std::endl;
-	mp_copy.inorder();
+	// std::cout << "mp map" << std::endl;
+	// mp.inorder();
+	// std::cout << "mp_range map" << std::endl;
+	// mp_range.inorder();
+	// std::cout << "mp_copy map" << std::endl;
+	// mp_copy.inorder();
 
 	std::cout << "\t-- PART ONE --" << std::endl;
 	printSize(mp);
