@@ -91,6 +91,8 @@ namespace ft
 		{ return (x == y); };
 		bool	operator()(const T2& x, const T1& y) const
 		{ return (x == y); };
+		bool	operator()(const T2& x, const T2& y) const
+		{ return (x == y); };
 	};
 	template <class T>
 	struct is_equal<T, T>
@@ -113,23 +115,28 @@ namespace ft
 
 	template <class InputIter1, class InputIter2, class BinaryPredicate>
 	bool equal (InputIter1 first1, InputIter1 last1,
-				InputIter2 first2, BinaryPredicate pred)
+				InputIter2 first2, InputIter2 last2, BinaryPredicate pred)
 	{
-		while (first1 != last1)
+		while (first1 != last1 && first2 != last2)
 		{
 			if (!pred(*first1, *first2))
 				return (false);
 			++first1;
 			++first2;
 		}
-		return (true);
+		if (first1 == last1 && first2 != last2)
+			return (false);
+		else if (first1 != last1 && first2 == last2)
+			return (false);
+		else
+			return (true);
 	};
 	template <class InputIter1, class InputIter2>
-	bool	equal(InputIter1 first1, InputIter1 last1, InputIter2 first2)
+	bool	equal(InputIter1 first1, InputIter1 last1, InputIter2 first2, InputIter2 last2)
 	{
 		typedef typename	iterator_traits<InputIter1>::value_type v1;
 		typedef typename	iterator_traits<InputIter2>::value_type v2;
-		return (ft::equal(first1, last1, first2, ft::is_equal<v1, v2>()));
+		return (ft::equal(first1, last1, first2, last2, ft::is_equal<v1, v2>()));
 	};
 
 	// lexicographical_compare :	모든 1의 인덱스에 따라 1의 내부값이 2의 내부값보다 작아야 함.
@@ -142,6 +149,8 @@ namespace ft
 		bool	operator()(const T1& x, const T2& y) const
 		{ return (x < y); };
 		bool	operator()(const T2& x, const T1& y) const
+		{ return (x < y); };
+		bool	operator()(const T2& x, const T2& y) const
 		{ return (x < y); };
 	};
 	template <class T>
@@ -212,7 +221,8 @@ namespace ft
 
 			// Constructor
 			pair(void) : first(), second() {};
-			pair(first_type const& a, second_type const& b) : first(a), second(b) {};
+			pair(first_type const& a, second_type const& b)
+			: first(a), second(b) {};
 			template <class U, class V>
 			pair(pair<U, V> const& pr) : first(pr.first), second(pr.second) {};
 
@@ -247,7 +257,7 @@ namespace ft
 
 	// Make Pair
 	template <class T1, class T2>
-	pair<T1, T2> make_pair (T1 x, T2 y)
+	inline pair<T1, T2> make_pair (T1 x, T2 y)
 	{ return (pair<T1, T2>(x, y)); };
 
 	// swap
@@ -301,6 +311,13 @@ namespace ft
 			_left = m_nullptr;
 			_right = m_nullptr;
 		};
+	};
+	template <class nodeptr>
+	bool	is_nil(nodeptr node)
+	{
+		if (node->_left == m_nullptr && node->_right == m_nullptr)
+			return (true);
+		return (false);
 	};
 }
 

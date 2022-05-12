@@ -1,5 +1,4 @@
 #include <iostream>
-#include <list>
 #include "../../containers/map.hpp"
 #include "../../containers/containers_test/srcs/base.hpp"
 
@@ -8,6 +7,7 @@
 #define TESTED_NAMESPACE ft
 #define _pair TESTED_NAMESPACE::pair
 typedef _pair<const T1, T2> T3;
+typedef TESTED_NAMESPACE::map<T1, T2>::iterator iterator;
 
 static int iter = 0;
 
@@ -36,61 +36,47 @@ void	printSize(T_MAP const &mp, bool print_content = 1)
 };
 
 template <typename MAP, typename U>
-void	ft_erase(MAP &mp, U param)
+void	ft_insert(MAP &mp, U param)
 {
+	_pair<iterator, bool> tmp;
+
 	std::cout << "\t-- [" << iter++ << "] --" << std::endl;
-	mp.erase(param);
+	tmp = mp.insert(param);
+	std::cout << "insert return: " << printPair(tmp.first);
+	std::cout << "Created new node: " << tmp.second << std::endl;
 	printSize(mp);
 }
 
 template <typename MAP, typename U, typename V>
-void	ft_erase(MAP &mp, U param, V param2)
+void	ft_insert(MAP &mp, U param, V param2)
 {
+	iterator tmp;
+
 	std::cout << "\t-- [" << iter++ << "] --" << std::endl;
-	mp.erase(param, param2);
+	tmp = mp.insert(param, param2);
+	std::cout << "insert return: " << printPair(tmp);
 	printSize(mp);
 }
 
 int		main(void)
 {
-	std::list<T3> lst;
-	unsigned int lst_size = 10;
-	for (unsigned int i = 0; i < lst_size; ++i)
-		lst.push_back(T3(i, std::string((lst_size - i), i + 65)));
-	TESTED_NAMESPACE::map<T1, T2> mp(lst.begin(), lst.end());
-	printSize(mp);
+	TESTED_NAMESPACE::map<T1, T2> mp, mp2;
 
-	// mp.printMap();
+	ft_insert(mp, T3(42, "lol"));
+	ft_insert(mp, T3(42, "mdr"));
 
-	ft_erase(mp, ++mp.begin());	//1제거
+	ft_insert(mp, T3(50, "mdr"));
+	ft_insert(mp, T3(35, "funny"));
 
-	// mp.printMap();
+	ft_insert(mp, T3(45, "bunny"));
+	ft_insert(mp, T3(21, "fizz"));
+	ft_insert(mp, T3(38, "buzz"));
 
-	ft_erase(mp, mp.begin());	//0제거
+	ft_insert(mp, mp.begin(), T3(55, "fuzzy"));
 
-	// mp.printMap();
-
-	ft_erase(mp, --mp.end());	//9제거
-
-	// mp.printMap();
-
-	ft_erase(mp, mp.begin(), ++(++(++mp.begin())));	//2~4제거
-
-	// mp.printMap();
-	
-	ft_erase(mp, --(--(--mp.end())), --mp.end());	//6~7제거
-
-	mp[10] = "Hello";			//10추가
-	mp[11] = "Hi there";		//11추가
-	printSize(mp);
-	ft_erase(mp, --(--(--mp.end())), mp.end());		//8~11제거
-
-	mp[12] = "ONE";				//12추가
-	mp[13] = "TWO";				//13추가
-	mp[14] = "THREE";			//14추가
-	mp[15] = "FOUR";			//15추가
-	printSize(mp);
-	ft_erase(mp, mp.begin(), mp.end());				//전체제거
+	ft_insert(mp2, mp2.begin(), T3(1337, "beauty"));
+	ft_insert(mp2, mp2.end(), T3(1000, "Hello"));
+	ft_insert(mp2, mp2.end(), T3(1500, "World"));
 
 	return (0);
 }

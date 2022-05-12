@@ -389,7 +389,7 @@ namespace ft
 	{
 		if (lhs.size() != rhs.size())
 			return (false);
-		return (ft::equal(lhs.begin(), lhs.end(), rhs.begin()));
+		return (ft::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end()));
 	};
 
 	template <class T, class Alloc>

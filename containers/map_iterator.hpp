@@ -22,7 +22,7 @@ namespace ft
 	private:
 		tree_iter	_elem;
 	public:
-		map_iterator(tree_iter elem = m_nullptr)
+		map_iterator(tree_iter elem = tree_iter())
 		: _elem(elem) {};
 		map_iterator(const map_iterator& x)
 		: _elem(x._elem) {};
@@ -34,6 +34,7 @@ namespace ft
 		};
 		~map_iterator() {};
 
+		tree_iter	get_tree_iter(void) const { return (this->_elem); };
 		reference	operator*() const
 		{ return (*(this->_elem)); };
 		pointer		operator->() const
@@ -73,7 +74,7 @@ namespace ft
 		typedef iterator									tree_iter;
 		typedef P											value_type;
 		typedef ft::bidirectional_iterator_tag				iterator_category;
-		typedef ft::iterator<iterator_category(), value_type>
+		typedef ft::iterator<iterator_category(), const value_type>
 															iter;
 		typedef typename iter::pointer						pointer;
 		typedef typename iter::reference					reference;
@@ -81,11 +82,12 @@ namespace ft
 	private:
 		tree_iter	_elem;
 	public:
-		map_const_iterator(tree_iter elem = m_nullptr)
+		map_const_iterator(tree_iter elem = tree_iter())
 		: _elem(elem) {};
 		map_const_iterator(const map_const_iterator& x)
 		: _elem(x._elem) {};
-		map_const_iterator(const map_iterator<tree_iter, value_type>& x)
+		map_const_iterator(const map_iterator<typename tree_iter::non_const_tree_iter
+											, value_type>& x)
 		: _elem(x.get_tree_iter()) {};
 		map_const_iterator&	operator=(const map_const_iterator& x)
 		{
@@ -126,6 +128,7 @@ namespace ft
 		{ return (x._elem == y._elem); };
 		friend bool	operator!=(const map_const_iterator& x, const map_const_iterator& y)
 		{ return (x._elem != y._elem); };
+		template <class, class> friend class tree_const_iterator;
 	};
 
 	// tree_iterator
@@ -143,19 +146,17 @@ namespace ft
 	private:
 		nodeptr	_elem;
 		nodeptr	_root;
-		nodeptr	_nil;
 	public:
-		tree_iterator(nodeptr elem = m_nullptr, nodeptr root = m_nullptr, nodeptr nil = m_nullptr)
-		: _elem(elem), _root(root), _nil(nil) {};
+		tree_iterator(nodeptr elem = m_nullptr, nodeptr root = m_nullptr)
+		: _elem(elem), _root(root) {};
 		tree_iterator(const tree_iterator& x)
-		: _elem(x.get_nodeptr()), _root(x.get_root()), _nil(x.get_nil()) {};
+		: _elem(x.get_nodeptr()), _root(x.get_root()) {};
 		tree_iterator&	operator=(const tree_iterator& x)
 		{
 			if (this != &x)
 			{
 				this->_elem = x.get_nodeptr();
 				this->_root = x.get_root();
-				this->_nil = x.get_nil();
 			}
 			return (*this);
 		};
@@ -163,11 +164,10 @@ namespace ft
 
 		nodeptr	get_nodeptr(void) const { return (this->_elem); };
 		nodeptr	get_root(void) const { return (this->_root); };
-		nodeptr	get_nil(void) const { return (this->_nil); };
-		nodeptr	get_end(void)
+		nodeptr	get_last(void)
 		{
 			nodeptr	node = _root;
-			while (node->_right != this->_nil)
+			while (!is_nil(node->_right))
 				node = node->_right;
 			return (node);
 		};
@@ -177,17 +177,16 @@ namespace ft
 		{ return (&(this->get_nodeptr()->_val)); };
 		tree_iterator&	operator++()
 		{
-			if (this->_elem == this->get_end())
-				this->_elem = this->get_nil();
-			else if (this->_elem->_right != this->_nil)
+			if (!is_nil(this->_elem->_right))
 			{
 				this->_elem = this->_elem->_right;
-				while (this->_elem->_left != this->_nil)
+				while (!is_nil(this->_elem->_left))
 					this->_elem = this->_elem->_left;
 			}
 			else
 			{
-				while (this->_elem->_parent->_left != this->_elem)
+				while (this->_elem->_parent != m_nullptr
+					&& this->_elem->_parent->_left != this->_elem)
 					this->_elem = this->_elem->_parent;
 				this->_elem = this->_elem->_parent;
 			}
@@ -201,17 +200,18 @@ namespace ft
 		};
 		tree_iterator&	operator--()
 		{
-			if (this->_elem == this->get_nil())
-				this->_elem = this->get_end();
-			else if (this->_elem->_left != this->_nil)
+			if (this->_elem == m_nullptr)
+				this->_elem = this->get_last();
+			else if (!is_nil(this->_elem->_left))
 			{	// end()가 아니면 왼쪽 자식 하위 노드중 가장 큰것.
 				this->_elem = this->_elem->_left;
-				while (this->_elem->_right != this->_nil)
+				while (!is_nil(this->_elem->_right))
 					this->_elem = this->_elem->_right;
 			}
 			else
 			{
-				while (this->_elem->_parent->_left == this->_elem) // 본인이 왼쪽자식이면 하위노드중 가장 작은 값.
+				while (this->_elem->_parent != m_nullptr
+					&& this->_elem->_parent->_left == this->_elem) // 본인이 왼쪽자식이면 하위노드중 가장 작은 값.
 					this->_elem = this->_elem->_parent;
 				this->_elem = this->_elem->_parent;
 			}
@@ -240,23 +240,22 @@ namespace ft
 		typedef typename iter::reference						reference;
 		typedef typename iter::difference_type					difference_type;
 	private:
+		typedef tree_iterator<nodeptr, value_type>				non_const_tree_iter;
 		nodeptr	_elem;
 		nodeptr	_root;
-		nodeptr	_nil;
 	public:
-		tree_const_iterator(nodeptr elem = m_nullptr, nodeptr root = m_nullptr, nodeptr nil = m_nullptr)
-		: _elem(elem), _root(root), _nil(nil) {};
+		tree_const_iterator(nodeptr elem = m_nullptr, nodeptr root = m_nullptr)
+		: _elem(elem), _root(root) {};
 		tree_const_iterator(const tree_const_iterator& x)
-		: _elem(x.get_nodeptr()), _root(x.get_root()), _nil(x.get_nil()) {};
+		: _elem(x.get_nodeptr()), _root(x.get_root()) {};
 		tree_const_iterator(const tree_iterator<nodeptr, value_type>& x)
-		: _elem(x.get_nodeptr()), _root(x.get_root()), _nil(x.get_nil()) {};
+		: _elem(x.get_nodeptr()), _root(x.get_root()) {};
 		tree_const_iterator&	operator=(const tree_const_iterator& x)
 		{
 			if (this != &x)
 			{
 				this->_elem = x.get_nodeptr();
 				this->_root = x.get_root();
-				this->_nil = x.get_nil();
 			}
 			return (*this);
 		};
@@ -264,11 +263,10 @@ namespace ft
 
 		nodeptr	get_nodeptr(void) const { return (this->_elem); };
 		nodeptr	get_root(void) const { return (this->_root); };
-		nodeptr	get_nil(void) const { return (this->_nil); };
-		nodeptr	get_end(void)
+		nodeptr	get_last(void)
 		{
 			nodeptr	node = _root;
-			while (node->_right == this->_nil)
+			while (!is_nil(node->_right))
 				node = node->_right;
 			return (node);
 		};
@@ -278,17 +276,16 @@ namespace ft
 		{ return (&(this->get_nodeptr()->_val)); };
 		tree_const_iterator&	operator++()
 		{
-			if (this->_elem == this->get_end())
-				this->_elem = this->get_nil();
-			else if (this->_elem->_right != this->_nil)
+			if (!is_nil(this->_elem->_right))
 			{
 				this->_elem = this->_elem->_right;
-				while (this->_elem->_left != this->_nil)
+				while (!is_nil(this->_elem->_left))
 					this->_elem = this->_elem->_left;
 			}
 			else
 			{
-				while (this->_elem->_parent->_left != this->_elem)
+				while (this->_elem->_parent != m_nullptr
+					&& this->_elem->_parent->_left != this->_elem)
 					this->_elem = this->_elem->_parent;
 				this->_elem = this->_elem->_parent;
 			}
@@ -302,17 +299,18 @@ namespace ft
 		};
 		tree_const_iterator&	operator--()
 		{
-			if (this->_elem == this->get_nil())
-				this->_elem = this->get_end();
-			else if (this->_elem->_left != this->_nil)
+			if (this->_elem == m_nullptr)
+				this->_elem = this->get_last();
+			else if (!is_nil(this->_elem->_left))
 			{	// end()가 아니면 왼쪽 자식 하위 노드중 가장 큰것.
 				this->_elem = this->_elem->_left;
-				while (this->_elem->_right != this->_nil)
+				while (!is_nil(this->_elem->_right))
 					this->_elem = this->_elem->_right;
 			}
 			else
 			{
-				while (this->_elem->_parent->_left == this->_elem) // 본인이 왼쪽자식이면 하위노드중 가장 작은 값.
+				while (this->_elem->_parent != m_nullptr
+					&& this->_elem->_parent->_left == this->_elem) // 본인이 왼쪽자식이면 하위노드중 가장 작은 값.
 					this->_elem = this->_elem->_parent;
 				this->_elem = this->_elem->_parent;
 			}
@@ -328,6 +326,7 @@ namespace ft
 		{ return (x.get_nodeptr() == y.get_nodeptr()); };
 		friend bool	operator!=(const tree_const_iterator& x, const tree_const_iterator& y)
 		{ return !(x == y); };
+		template <class, class> friend class map_const_iterator;
 	};
 }
 

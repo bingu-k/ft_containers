@@ -42,7 +42,7 @@ int		main(void)
 	// std::cout << std::endl << "Content is:" << std::endl;
 	// for (; itq != iteq; ++itq)
 	// 	std::cout << "- " << printPair(itq, false) << std::endl;
-	
+
 	TESTED_NAMESPACE::map<T1, T2> mp(lst.begin(), lst.end());
 	// TESTED_NAMESPACE::map<T1, T2>::iterator itq = mp.begin(), iteq = mp.end();
 	// std::cout << std::endl << "Content is:" << std::endl;
@@ -79,5 +79,11 @@ int		main(void)
 	printSize(mp);
 	printSize(mp_range);
 	printSize(mp_copy);
+
+	// mp.clear();
+	// mp_copy.clear();
+	// mp_range.clear();
+	// while (1) ;
+
 	return (0);
 };

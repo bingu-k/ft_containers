@@ -51,6 +51,7 @@ int		main(void)
 	_map	mp;
 
 	mp['a'] = 2.3;
+	mp.printMap();
 	mp['b'] = 1.4;
 	mp['c'] = 0.3;
 	mp['d'] = 4.2;
@@ -63,3 +64,4 @@ int		main(void)
 	printSize(mp);
 	return (0);
 }
+#include <algorithm>
