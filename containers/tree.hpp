@@ -29,25 +29,24 @@ namespace ft
 	private:
 		size_type			_size;
 		nodeptr				_root;
+		nodeptr				_end;
 		value_compare		_comp;
 		allocator_type		_alloc;
 		node_allocator_type	_node_alloc;
 	public:
 		tree(value_compare comp = value_compare(), allocator_type alloc = allocator_type())
-		: _size(0), _root(m_nullptr), _comp(comp), _alloc(alloc)
+		: _size(0), _root(m_nullptr), _end(m_nullptr), _comp(comp), _alloc(alloc)
 		, _node_alloc(node_allocator_type())
 		{
-			this->_root = _node_alloc.allocate(1);
-			_node_alloc.construct(this->_root, _node());	// 임시 초기화
-			this->_root->_color = Red;
+			this->_end = make_nil_node();
+			this->_root = this->_end;
 		};
 		tree(const tree& x)
-		: _size(0), _root(m_nullptr), _comp(x.comp()), _alloc(allocator_type())
+		: _size(0), _root(m_nullptr), _end(m_nullptr), _comp(x.comp()), _alloc(allocator_type())
 		, _node_alloc(x.node_alloc())
 		{
-			this->_root = _node_alloc.allocate(1);
-			_node_alloc.construct(this->_root, _node());	// 임시 초기화
-			this->_root->_color = Red;
+			this->_end = make_nil_node();
+			this->_root = make_nil_node();
 			this->insert_multi(x.begin(), x.end());
 		};
 		tree&	operator=(const tree& origin)
@@ -57,33 +56,43 @@ namespace ft
 				this->all_clear();
 				this->_comp = origin.comp();
 				this->_node_alloc = origin.node_alloc();
-				this->_root = _node_alloc.allocate(1);
-				_node_alloc.construct(this->_root, _node());	// 임시 초기화
-				this->_root->_color = Red;
+				this->_end = make_nil_node();
+				this->_root = this->_end;
 				this->insert_multi(origin.begin(), origin.end());
 			}
 			return (*this);
 		};
-		~tree() { all_clear(); };
+		~tree()
+		{
+			all_clear();
+			remove_node(this->_end);
+		};
 
 		// GETTER
 		size_type			size(void) const { return (this->_size); };
 		nodeptr				root(void) const { return (this->_root); };
 		value_compare		comp(void) const { return (this->_comp); };
 		node_allocator_type	node_alloc(void) const { return (this->_node_alloc); };
+		nodeptr	make_nil_node(void)
+		{
+			nodeptr	temp = _node_alloc.allocate(1);
+			_node_alloc.construct(temp, _node());
+			temp->_parent = m_nullptr;
+			temp->_left = m_nullptr;
+			temp->_right = m_nullptr;
+			temp->_color = Black;
+			return (temp);
+		}
 		template <class value_type>
 		nodeptr	make_node(value_type &value)
 		{
 			nodeptr	res = _node_alloc.allocate(1);
 			_node_alloc.construct(res, _node(value));		// 본인 초기화
-			res->_left = _node_alloc.allocate(1);
-			_node_alloc.construct(res->_left, _node());		// 임시 초기화
+			res->_parent = m_nullptr;
+			res->_left = make_nil_node();
 			res->_left->_parent = res;
-			res->_left->_color = Black;
-			res->_right = _node_alloc.allocate(1);
-			_node_alloc.construct(res->_right, _node());	// 임시 초기화
+			res->_right = make_nil_node();
 			res->_right->_parent = res;
-			res->_right->_color = Black;
 			return (res);
 		};
 
@@ -96,7 +105,7 @@ namespace ft
 				while (!is_nil(res->_left))
 					res = res->_left;
 			}
-			return (iterator(res, this->root()));
+			return (iterator(res, this->_end));
 		};
 		const_iterator	begin(void) const
 		{
@@ -106,12 +115,12 @@ namespace ft
 				while (!is_nil(res->_left))
 					res = res->_left;
 			}
-			return (const_iterator(res, this->root()));
+			return (const_iterator(res, this->_end));
 		};
 		iterator		end(void)
-		{ return (iterator(m_nullptr, this->root())); };
+		{ return (iterator(this->_end, this->_end)); };
 		const_iterator	end(void) const
-		{ return (iterator(m_nullptr, this->root())); };
+		{ return (const_iterator(this->_end, this->_end)); };
 
 		// Capacity
 		bool		empty(void) const		{ return (this->size() == 0); };
@@ -132,10 +141,10 @@ namespace ft
 		iterator	insert_pos(iterator	pos, const value_type& val)
 		{
 			iterator	res = find(val.first);
-			
 			if (res == end())			// 중복 아님
 			{							// pos의 자식 노드 위치 확인
-				res = iterator(make_node(val), this->root());
+				_size += 1;
+				res = iterator(make_node(val), this->_end);
 				nodeptr	temp_node = this->root();
 				while (!is_nil(temp_node))
 				{
@@ -149,7 +158,6 @@ namespace ft
 					insert_node(res.get_nodeptr(), pos.get_nodeptr());
 				else
 					insert_node(res.get_nodeptr(), this->root());
-				_size += 1;
 			}
 			return (res);
 		};
@@ -163,14 +171,18 @@ namespace ft
 				++start;
 			}
 		};
-		void		remove_unique(const key_type& k)
+		size_type		remove_unique(const key_type& k)
 		{
 			iterator	res = find(k);
 			if (res != this->end())
 			{
 				_size -= 1;
-				delete_node(res.get_nodeptr());
+				nodeptr	deleted_node = res.get_nodeptr();
+				delete_node(deleted_node);
+				remove_node(deleted_node);
+				return (1);
 			}
+			return (0);
 		};
 		void		remove_pos(iterator pos)
 		{
@@ -178,28 +190,34 @@ namespace ft
 			if (res != this->end())
 			{
 				_size -= 1;
-				delete_node(res.get_nodeptr());
+				nodeptr	deleted_node = res.get_nodeptr();
+				delete_node(deleted_node);
+				remove_node(deleted_node);
 			}
 		};
 		void		remove_multi(iterator first, iterator last)
 		{
 			iterator	start = first;
+			nodeptr		deleted_node = m_nullptr;
 			while (start != last)
 			{
 				_size -= 1;
-				delete_node(start.get_nodeptr());
+				deleted_node = start.get_nodeptr();
 				++start;
+				delete_node(deleted_node);
+				remove_node(deleted_node);
 			}
 		};
 		void		swap(tree& x)
 		{
 			swap_something(this->_size, x._size);
 			swap_something(this->_root, x._root);
+			swap_something(this->_end, x._end);
 			swap_something(this->_comp, x._comp);
 			swap_something(this->_alloc, x._alloc);
 			swap_something(this->_node_alloc, x._node_alloc);
 		};
-		void	remove_node(nodeptr &node)
+		void	remove_node(nodeptr& node)
 		{
 			this->_node_alloc.destroy(node);
 			this->_node_alloc.deallocate(node, 1);
@@ -207,18 +225,25 @@ namespace ft
 		};
 		void	clear(nodeptr &np)
 		{
-			if (!is_nil(np))
+			if (np == this->_end)
+				return ;
+			else
 			{
-				clear(np->_left);
-				clear(np->_right);
+				if (!is_nil(np))
+				{
+					clear(np->_left);
+					clear(np->_right);
+				}
+				remove_node(np);
 			}
-			remove_node(np);
 		};
 		void	all_clear(void)
 		{
 			this->_size = 0;
 			if (this->_root != m_nullptr)
 				clear(this->_root);
+			this->_end->_parent = m_nullptr;
+			this->_root = this->_end;
 		};
 
 		// Operations
@@ -233,7 +258,7 @@ namespace ft
 				else if (_comp(k, pos->_val))
 					pos = pos->_left;
 				else
-					return (iterator(pos, this->root()));
+					return (iterator(pos, this->_end));
 			}
 			return (this->end());
 		};
@@ -248,7 +273,7 @@ namespace ft
 				else if (_comp(k, pos->_val))
 					pos = pos->_left;
 				else
-					return (iterator(pos, this->root()));
+					return (iterator(pos, this->_end));
 			}
 			return (this->end());
 		};
@@ -271,7 +296,7 @@ namespace ft
 				else
 					rt = rt->_right;
 			}
-			return (iterator(res, this->root()));
+			return (iterator(res, this->_end));
 		};
 		const_iterator	__lower_bound(const key_type& k, nodeptr rt, nodeptr res) const
 		{
@@ -285,7 +310,7 @@ namespace ft
 				else
 					rt = rt->_right;
 			}
-			return (const_iterator(res, this->root()));
+			return (const_iterator(res, this->_end));
 		};
 		iterator		lower_bound(const key_type& k)
 		{ return (__lower_bound(k, this->root(), this->end().get_nodeptr())); };
@@ -303,7 +328,7 @@ namespace ft
 				else					// 주어진 키 >= 기준 키
 					rt = rt->_right;
 			}
-			return (iterator(res, this->root()));
+			return (iterator(res, this->_end));
 		};
 		const_iterator	__upper_bound(const key_type& k, nodeptr rt, nodeptr res) const
 		{
@@ -317,7 +342,7 @@ namespace ft
 				else
 					rt = rt->_right;
 			}
-			return (const_iterator(res, this->root()));
+			return (const_iterator(res, this->_end));
 		};
 		iterator		upper_bound(const key_type& k)
 		{ return (__upper_bound(k, this->root(), this->end().get_nodeptr())); };
@@ -381,12 +406,11 @@ namespace ft
 			target->_parent = y;
 			if (y == m_nullptr)
 			{
-				_node_alloc.destroy(this->root());
-				_node_alloc.construct(this->root(), _node(target->_val));
-				this->_root->_left = target->_left;
-				this->_root->_right = target->_right;
-				this->_root->_color = Black;
-				remove_node(target);
+				remove_node(target->_right);
+				target->_right = this->_end;
+				target->_right->_parent = target;
+				this->_root = target;
+				target->_color = Black;
 				return (this->_root);
 			}
 			else if (_comp(target->_val, y->_val))
@@ -396,7 +420,9 @@ namespace ft
 			}
 			else
 			{
-				remove_node(y->_right);
+				remove_node(target->_right);
+				target->_right = y->_right;
+				target->_right->_parent = target;
 				y->_right = target;
 			}
 			target->_color = Red;
@@ -474,12 +500,11 @@ namespace ft
 		};
 		void	delete_node(nodeptr target)
 		{
-			nodeptr	y = (!is_nil(target->_left) || !is_nil(target->_right))
+			nodeptr	y = (is_nil(target->_left) || is_nil(target->_right))
 						? target : tree_next(target);
 			nodeptr	x = (!is_nil(y->_left)) ? y->_left : y->_right;
 										// 대체대체 노드 생성
-			if (!is_nil(x))			// 대체대체 노드를 대체노드로 대체하기위한 부모 지정
-				x->_parent = y->_parent;
+			x->_parent = y->_parent;
 			if (y->_parent == m_nullptr)	// 근데 혹시 nil이니?
 				this->_root = x;			// 그럼 _root로해 이건 target이 root이자 leaf
 			else if (y == y->_parent->_left)
@@ -493,27 +518,32 @@ namespace ft
 				if (target->_parent != m_nullptr)
 				{
 					if (target == target->_parent->_left)
-						y->_parent->_left = y;	// 대체 노드로 대체하기위한 부모의 지정
+						target->_parent->_left = y;	// 대체 노드로 대체하기위한 부모의 지정
 					else
-						y->_parent->_right = y;
+						target->_parent->_right = y;
 				}
+				remove_node(y->_left);
+				target->_left->_parent = y;
 				y->_left = target->_left;	// 대체 노드로 대체하기위한 자식지정
-				if (!is_nil(y->_left))
-					y->_left->_parent = y;
+				target->_right->_parent = y;
 				y->_right = target->_right;
-				if (!is_nil(y->_right))
-					y->_right->_parent = y;
 				y->_color = target->_color;	// 대체 노드로 대체하기위한 색지정
 				if (target == this->root())	// target이 root?
 					_root = y;				// 그러면 root는 y임
 			}
-			if (removed_color && is_nil(x))			// 빨-빨, 검-빨 ok / 검-검, 빨-검 ko
+			if (removed_color)			// 빨-빨, 검-빨 ok / 검-검, 빨-검 ko
 				delete_fixup(x);
-			this->remove_node(target);
+			nodeptr	node = this->root();
+			if (!is_nil(node))
+			{
+				while (!is_nil(node->_right))
+					node = node->_right;
+				node->_right = this->_end;
+			}
 		};
 		void	delete_fixup(nodeptr x)
 		{
-			while (x->_color == Black)
+			while (x != this->root() && x->_color == Black)
 			{
 				if (x == x->_parent->_left)
 				{
@@ -556,7 +586,7 @@ namespace ft
 						right_rotation(x->_parent);
 						u = x->_parent->_left;
 					}
-					if (u->_right->_color == Black && u->_left->_color == Black)
+					if (u->_left->_color == Black && u->_right->_color == Black)
 					{
 						u->_color = Red;
 						x = x->_parent;

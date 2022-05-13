@@ -321,4 +321,6 @@ namespace ft
 	};
 }
 
+#include <__tree>
+
 #endif

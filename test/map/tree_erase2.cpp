@@ -39,71 +39,32 @@ template <typename MAP, typename U>
 void	ft_erase(MAP &mp, U param)
 {
 	std::cout << "\t-- [" << iter++ << "] --" << std::endl;
-	mp.erase(param);
-	printSize(mp);
-}
-
-template <typename MAP, typename U, typename V>
-void	ft_erase(MAP &mp, U param, V param2)
-{
-	std::cout << "\t-- [" << iter++ << "] --" << std::endl;
-	mp.erase(param, param2);
+	std::cout << "ret: " << mp.erase(param) << std::endl;
 	printSize(mp);
 }
 
 int		main(void)
 {
 	std::list<T3> lst;
-	unsigned int lst_size = 10;
+	unsigned int lst_size = 6;
 	for (unsigned int i = 0; i < lst_size; ++i)
 		lst.push_back(T3(i, std::string((lst_size - i), i + 65)));
 	TESTED_NAMESPACE::map<T1, T2> mp(lst.begin(), lst.end());
 	printSize(mp);
 
-	// mp.printMap();
+	for (int i = 2; i < 4; ++i)
+		ft_erase(mp, i);
 
-	ft_erase(mp, ++mp.begin());	//1제거
+	ft_erase(mp, mp.begin()->first);
+	ft_erase(mp, (--mp.end())->first);
 
-	// mp.printMap();
-
-	ft_erase(mp, mp.begin());	//0제거
-
-	// mp.printMap();
-
-	ft_erase(mp, --mp.end());	//9제거
-
-	std::cout << "1, 0, 9 제거" << std::endl;
-	// mp.printMap();
-
-	ft_erase(mp, mp.begin(), ++(++(++mp.begin())));	//2~4제거
-
-	std::cout << "2, 3, 4 제거" << std::endl;
-	mp.printMap();
-	
-	ft_erase(mp, --(--(--mp.end())), --mp.end());	//6~7제거
-
-	std::cout << "6, 7 제거" << std::endl;
-	mp.printMap();
-	mp[10] = "Hello";			//10추가
-	mp[11] = "Hi there";		//11추가
-	std::cout << "10, 11 추가" << std::endl;
-	// mp.printMap();
+	mp[-1] = "Hello";
+	mp[10] = "Hi there";
+	mp[10] = "Hi there";
 	printSize(mp);
-	ft_erase(mp, --(--(--mp.end())), mp.end());		//8~11제거
 
-	std::cout << "8, 10, 11 제거" << std::endl;
-	// mp.printMap();
-	mp[12] = "ONE";				//12추가
-	mp[13] = "TWO";				//13추가
-	mp[14] = "THREE";			//14추가
-	mp[15] = "FOUR";			//15추가
-
-	std::cout << "12, 13, 14, 15 추가" << std::endl;
-	// mp.printMap();
-	printSize(mp);
-	ft_erase(mp, mp.begin(), mp.end());				//전체제거
-	std::cout << "전체 제거" << std::endl;
-	// mp.printMap();
+	ft_erase(mp, 0);
+	ft_erase(mp, 1);
 
 	return (0);
 }

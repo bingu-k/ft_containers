@@ -121,10 +121,7 @@ namespace ft
 		void		erase(iterator position)
 		{ _tree.remove_pos(position.get_tree_iter()); };
 		size_type	erase(const key_type& k)
-		{
-			_tree.remove_unique(k);
-			return (1);
-		};
+		{ return (_tree.remove_unique(k)); };
 		void		erase(iterator first, iterator last)
 		{ _tree.remove_multi(first.get_tree_iter(), last.get_tree_iter()); };
 		void	swap(map& x)
