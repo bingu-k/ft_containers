@@ -264,7 +264,7 @@ namespace ft
 	template <class T>
 	void	swap_something(T& a, T& b)
 	{
-		T&	temp = a;
+		T	temp = a;
 		a = b;
 		b = temp;
 	};

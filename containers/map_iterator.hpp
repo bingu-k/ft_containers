@@ -180,8 +180,7 @@ namespace ft
 			}
 			else
 			{
-				while (this->_elem->_parent != m_nullptr
-					&& this->_elem->_parent->_left != this->_elem)
+				while (this->_elem->_parent->_left != this->_elem)
 					this->_elem = this->_elem->_parent;
 				this->_elem = this->_elem->_parent;
 			}
@@ -205,8 +204,7 @@ namespace ft
 			}
 			else
 			{
-				while (this->_elem->_parent != m_nullptr
-					&& this->_elem->_parent->_left == this->_elem) // 본인이 왼쪽자식이면 하위노드중 가장 작은 값.
+				while (this->_elem->_parent->_left == this->_elem) // 본인이 왼쪽자식이면 하위노드중 가장 작은 값.
 					this->_elem = this->_elem->_parent;
 				this->_elem = this->_elem->_parent;
 			}
@@ -274,8 +272,7 @@ namespace ft
 			}
 			else
 			{
-				while (this->_elem->_parent != m_nullptr
-					&& this->_elem->_parent->_left != this->_elem)
+				while (this->_elem->_parent->_left != this->_elem)
 					this->_elem = this->_elem->_parent;
 				this->_elem = this->_elem->_parent;
 			}
@@ -299,8 +296,7 @@ namespace ft
 			}
 			else
 			{
-				while (this->_elem->_parent != m_nullptr
-					&& this->_elem->_parent->_left == this->_elem) // 본인이 왼쪽자식이면 하위노드중 가장 작은 값.
+				while (this->_elem->_parent->_left == this->_elem) // 본인이 왼쪽자식이면 하위노드중 가장 작은 값.
 					this->_elem = this->_elem->_parent;
 				this->_elem = this->_elem->_parent;
 			}

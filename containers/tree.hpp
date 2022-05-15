@@ -225,9 +225,7 @@ namespace ft
 		};
 		void	clear(nodeptr &np)
 		{
-			if (np == this->_end)
-				return ;
-			else
+			if (np != this->_end)
 			{
 				if (!is_nil(np))
 				{
@@ -380,7 +378,7 @@ namespace ft
 		{
 			nodeptr	x = y->_left;
 			y->_left = x->_right;
-			x->_right->_parent = x;
+			x->_right->_parent = y;
 			x->_parent = y->_parent;
 			if (y == this->root())
 				this->_root = x;
@@ -492,7 +490,7 @@ namespace ft
 			}
 			else
 			{
-				while (x != this->root() && x == x->_parent->_right)
+				while (x == x->_parent->_right)
 					x = x->_parent;
 				x = x->_parent;
 			}
@@ -515,21 +513,25 @@ namespace ft
 			if (y != target)
 			{
 				y->_parent = target->_parent;// 대체 노드로 대체하기위한 부모지정
-				if (target->_parent != m_nullptr)
-				{
-					if (target == target->_parent->_left)
-						target->_parent->_left = y;	// 대체 노드로 대체하기위한 부모의 지정
-					else
-						target->_parent->_right = y;
-				}
+				if (target == this->root())	// target이 root?
+					_root = y;				// 그러면 root는 y임
+				else if (target == target->_parent->_left)
+					target->_parent->_left = y;	// 대체 노드로 대체하기위한 부모의 지정
+				else
+					target->_parent->_right = y;
 				remove_node(y->_left);
 				target->_left->_parent = y;
 				y->_left = target->_left;	// 대체 노드로 대체하기위한 자식지정
 				target->_right->_parent = y;
 				y->_right = target->_right;
 				y->_color = target->_color;	// 대체 노드로 대체하기위한 색지정
-				if (target == this->root())	// target이 root?
-					_root = y;				// 그러면 root는 y임
+			}
+			else
+			{
+				if (y->_left == x)
+					remove_node(y->_right);
+				else
+					remove_node(y->_left);
 			}
 			if (removed_color)			// 빨-빨, 검-빨 ok / 검-검, 빨-검 ko
 				delete_fixup(x);
