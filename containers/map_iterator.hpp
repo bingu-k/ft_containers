@@ -133,6 +133,9 @@ namespace ft
 
 	// tree_iterator
 	template <class N, class P>
+	class tree_const_iterator;
+
+	template <class N, class P>
 	class tree_iterator
 	{
 	public:
@@ -221,6 +224,7 @@ namespace ft
 		friend bool	operator!=(const tree_iterator& x, const tree_iterator& y)
 		{ return !(x == y); };
 	};
+
 	template <class N, class P>
 	class tree_const_iterator
 	{
@@ -253,6 +257,9 @@ namespace ft
 			return (*this);
 		};
 		~tree_const_iterator() {};
+
+		// ft::tree_iterator<nodeptr, value_type>	remove_const() const
+		// { return (const_cast<typename ft::tree_iterator<nodeptr, value_type>::()>); };
 
 		nodeptr	get_nodeptr(void) const { return (this->_elem); };
 		nodeptr	get_end(void) const { return (this->_end); };

@@ -6,15 +6,12 @@
 
 namespace ft
 {
-	template <class Key, class Value, class _Compare = ft::less<Key>
-			, class _Alloc = std::allocator<pair<Key, Value> > >
+	template <class T, class _Compare, class _Alloc>
 	class tree
 	{
 	public:
 		// Type Define
-		typedef Key												key_type;
-		typedef Value											mapped_type;
-		typedef	pair<key_type, mapped_type>						value_type;
+		typedef T												value_type;
 		typedef _Compare										value_compare;
 		typedef _Alloc											allocator_type;
 		typedef typename _Alloc::template rebind<node<value_type> >::other
@@ -46,26 +43,25 @@ namespace ft
 		, _node_alloc(x.node_alloc())
 		{
 			this->_end = make_nil_node();
-			this->_root = make_nil_node();
+			this->_root = this->_end;
 			this->insert_multi(x.begin(), x.end());
 		};
 		tree&	operator=(const tree& origin)
 		{
-			if (this != &origin)
-			{
-				this->all_clear();
-				this->_comp = origin.comp();
-				this->_node_alloc = origin.node_alloc();
-				this->_end = make_nil_node();
-				this->_root = this->_end;
-				this->insert_multi(origin.begin(), origin.end());
-			}
+			this->all_clear();
+			remove_node(this->_end);
+			this->_comp = origin.comp();
+			this->_node_alloc = origin.node_alloc();
+			this->_end = make_nil_node();
+			this->_root = this->_end;
+			this->insert_multi(origin.begin(), origin.end());
 			return (*this);
 		};
 		~tree()
 		{
 			all_clear();
-			remove_node(this->_end);
+			this->_node_alloc.destroy(this->_end);
+			this->_node_alloc.deallocate(this->_end, 1);
 		};
 
 		// GETTER
@@ -129,7 +125,7 @@ namespace ft
 		// Modifiers
 		pair<iterator, bool>	insert_unique(const value_type& val)
 		{
-			iterator	res = find(val.first);
+			iterator	res = find(val);
 			if (res == end())			// 존재하지 않음
 			{
 				_size += 1;
@@ -140,7 +136,7 @@ namespace ft
 		};
 		iterator	insert_pos(iterator	pos, const value_type& val)
 		{
-			iterator	res = find(val.first);
+			iterator	res = find(val);
 			if (res == end())			// 중복 아님
 			{							// pos의 자식 노드 위치 확인
 				_size += 1;
@@ -171,7 +167,8 @@ namespace ft
 				++start;
 			}
 		};
-		size_type		remove_unique(const key_type& k)
+		template <class _T>
+		size_type		remove_unique(_T k)
 		{
 			iterator	res = find(k);
 			if (res != this->end())
@@ -186,7 +183,7 @@ namespace ft
 		};
 		void		remove_pos(iterator pos)
 		{
-			iterator	res = find((*pos).first);
+			iterator	res = find(*pos);
 			if (res != this->end())
 			{
 				_size -= 1;
@@ -219,9 +216,12 @@ namespace ft
 		};
 		void	remove_node(nodeptr& node)
 		{
-			this->_node_alloc.destroy(node);
-			this->_node_alloc.deallocate(node, 1);
-			node = m_nullptr;
+			if (node != this->_end)
+			{
+				this->_node_alloc.destroy(node);
+				this->_node_alloc.deallocate(node, 1);
+				node = m_nullptr;
+			}
 		};
 		void	clear(nodeptr &np)
 		{
@@ -238,14 +238,15 @@ namespace ft
 		void	all_clear(void)
 		{
 			this->_size = 0;
-			if (this->_root != m_nullptr)
+			if (this->_root != this->_end)
 				clear(this->_root);
 			this->_end->_parent = m_nullptr;
 			this->_root = this->_end;
 		};
 
 		// Operations
-		iterator		find(const key_type& k, nodeptr pos = m_nullptr)
+		template <class _T>
+		iterator		find(_T k, nodeptr pos = m_nullptr)
 		{
 			if (pos == m_nullptr)
 				pos = this->root();
@@ -260,7 +261,8 @@ namespace ft
 			}
 			return (this->end());
 		};
-		const_iterator		find(const key_type& k, nodeptr pos = m_nullptr) const
+		template <class _T>
+		const_iterator		find(_T k, nodeptr pos = m_nullptr) const
 		{
 			if (pos == m_nullptr)
 				pos = this->root();
@@ -275,14 +277,16 @@ namespace ft
 			}
 			return (this->end());
 		};
-		size_type	count(const key_type& k) const
+		template <class _T>
+		size_type	count(_T k) const
 		{
 			if (find(k) == this->end())
 				return (0);
 			else
 				return (1);
 		};
-		iterator		__lower_bound(const key_type& k, nodeptr rt, nodeptr res)
+		template <class _T>
+		iterator		__lower_bound(_T k, nodeptr rt, nodeptr res)
 		{
 			while (!is_nil(rt))
 			{
@@ -296,7 +300,8 @@ namespace ft
 			}
 			return (iterator(res, this->_end));
 		};
-		const_iterator	__lower_bound(const key_type& k, nodeptr rt, nodeptr res) const
+		template <class _T>
+		const_iterator	__lower_bound(_T k, nodeptr rt, nodeptr res) const
 		{
 			while (!is_nil(rt))
 			{
@@ -310,11 +315,14 @@ namespace ft
 			}
 			return (const_iterator(res, this->_end));
 		};
-		iterator		lower_bound(const key_type& k)
+		template <class _T>
+		iterator		lower_bound(_T k)
 		{ return (__lower_bound(k, this->root(), this->end().get_nodeptr())); };
-		const_iterator	lower_bound(const key_type& k) const
+		template <class _T>
+		const_iterator	lower_bound(_T k) const
 		{ return (__lower_bound(k, this->root(), this->end().get_nodeptr())); };
-		iterator		__upper_bound(const key_type& k, nodeptr rt, nodeptr res)
+		template <class _T>
+		iterator		__upper_bound(_T k, nodeptr rt, nodeptr res)
 		{
 			while (!is_nil(rt))
 			{
@@ -328,7 +336,8 @@ namespace ft
 			}
 			return (iterator(res, this->_end));
 		};
-		const_iterator	__upper_bound(const key_type& k, nodeptr rt, nodeptr res) const
+		template <class _T>
+		const_iterator	__upper_bound(_T k, nodeptr rt, nodeptr res) const
 		{
 			while (!is_nil(rt))
 			{
@@ -342,11 +351,14 @@ namespace ft
 			}
 			return (const_iterator(res, this->_end));
 		};
-		iterator		upper_bound(const key_type& k)
+		template <class _T>
+		iterator		upper_bound(_T k)
 		{ return (__upper_bound(k, this->root(), this->end().get_nodeptr())); };
-		const_iterator		upper_bound(const key_type& k) const
+		template <class _T>
+		const_iterator		upper_bound(_T k) const
 		{ return (__upper_bound(k, this->root(), this->end().get_nodeptr())); };
-		pair<iterator, iterator>	equal_range(const key_type& k)
+		template <class _T>
+		pair<iterator, iterator>	equal_range(_T k)
 		{ return (ft::make_pair(lower_bound(k), upper_bound(k))); };
 
 	private:
@@ -540,7 +552,11 @@ namespace ft
 			{
 				while (!is_nil(node->_right))
 					node = node->_right;
-				node->_right = this->_end;
+				if (node->_right != this->_end)
+				{
+					remove_node(node->_right);
+					node->_right = this->_end;
+				}
 			}
 		};
 		void	delete_fixup(nodeptr x)

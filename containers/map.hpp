@@ -36,8 +36,7 @@ namespace ft
 	private:
 		typedef _value_compare<key_type, value_type, key_compare>
 																_vc;
-		typedef tree<const key_type, mapped_type, _vc, allocator_type>
-																base;
+		typedef tree<value_type, _vc, allocator_type>			base;
 		typedef typename base::iterator							tree_iter;
 		typedef typename base::const_iterator					const_tree_iter;
 		allocator_type	_alloc;
@@ -70,8 +69,8 @@ namespace ft
 		{
 			if (this != &x)
 			{
+				this->_alloc = x._alloc;
 				this->_tree = x._tree;
-				this->insert(x.begin(), x.end());
 			}
 			return (*this);
 		};

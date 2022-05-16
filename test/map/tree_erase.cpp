@@ -95,7 +95,7 @@ int		main(void)
 	// mp.printMap();
 	mp[12] = "ONE";				//12추가
 	mp[13] = "TWO";				//13추가
-	mp[14] = "THREE";			//14추가
+	mp[14] = "THREE";			//14추가this->_end
 	mp[15] = "FOUR";			//15추가
 
 	std::cout << "12, 13, 14, 15 추가" << std::endl;
@@ -104,6 +104,6 @@ int		main(void)
 	ft_erase(mp, mp.begin(), mp.end());				//전체제거
 	std::cout << "전체 제거" << std::endl;
 	// mp.printMap();
-
+	system("leaks a.out");
 	return (0);
 }
