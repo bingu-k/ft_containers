@@ -19,8 +19,9 @@ namespace ft
 		typedef typename node_allocator_type::size_type			size_type;
 		typedef node<value_type>								_node;
 		typedef node<value_type>*								nodeptr;
+		typedef node<const value_type>*							const_nodeptr;
 		typedef tree_iterator<nodeptr, value_type>				iterator;
-		typedef tree_const_iterator<nodeptr, value_type>		const_iterator;
+		typedef tree_const_iterator<const_nodeptr, value_type>	const_iterator;
 		typedef typename iterator::difference_type				difference_type;
 
 	private:

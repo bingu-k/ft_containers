@@ -230,14 +230,14 @@ namespace ft
 	{
 	public:
 		typedef N												nodeptr;
-		typedef P												value_type;
+		typedef const P											value_type;
 		typedef ft::bidirectional_iterator_tag					iterator_category;
-		typedef ft::iterator<iterator_category(), value_type>	iter;
+		typedef ft::iterator<iterator_category(), P>			iter;
 		typedef typename iter::pointer							pointer;
 		typedef typename iter::reference						reference;
 		typedef typename iter::difference_type					difference_type;
-	private:
 		typedef tree_iterator<nodeptr, value_type>				non_const_tree_iter;
+	private:
 		nodeptr	_elem;
 		nodeptr	_end;
 	public:
@@ -245,7 +245,7 @@ namespace ft
 		: _elem(elem), _end(end) {};
 		tree_const_iterator(const tree_const_iterator& x)
 		: _elem(x.get_nodeptr()), _end(x.get_end()) {};
-		tree_const_iterator(const tree_iterator<nodeptr, value_type>& x)
+		tree_const_iterator(const non_const_tree_iter& x)
 		: _elem(x.get_nodeptr()), _end(x.get_end()) {};
 		tree_const_iterator&	operator=(const tree_const_iterator& x)
 		{

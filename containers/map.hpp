@@ -100,7 +100,7 @@ namespace ft
 			iterator	check = find(k);
 			if (check == this->end())
 			{
-				iterator	res = iterator(this->_tree.insert_unique(ft::make_pair(k, mapped_type())).first);
+				iterator	res(this->_tree.insert_unique(ft::make_pair(k, mapped_type())).first);
 				return ((*res).second);
 			}
 			return ((*check).second);

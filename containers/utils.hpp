@@ -224,7 +224,7 @@ namespace ft
 			pair(first_type const& a, second_type const& b)
 			: first(a), second(b) {};
 			template <class U, class V>
-			pair(pair<U, V> const& pr) : first(pr.first), second(pr.second) {};
+			pair(const pair<U, V>& pr) : first(pr.first), second(pr.second) {};
 
 			// Assign Operator
 			pair&	operator=(pair const& pr)
