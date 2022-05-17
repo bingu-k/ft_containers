@@ -1,13 +1,169 @@
 #ifndef	VECTOR_HPP
 # define VECTOR_HPP
 
-// # include <iostream>
+/*
+namespace ft
+{
+	// Error classes
+	template <bool>
+	class vector_common
+	{
+	protected:
+		vector_common();
+		void	throw_length_error() const;
+		void	throw_out_of_range() const;
+	};
+
+	// Vector Base
+	template <class T, class Allocator>
+	class vector_base
+		: protected vector_common<true>
+	{
+	public:
+		typedef Allocator									allocator_type;
+		typedef typename allocator_type::size_type			size_type;
+	protected:
+		typedef T											value_type;
+		typedef value_type&									reference;
+		typedef const value_type&							const_reference;
+		typedef typename allocator_type::difference_type	difference_type;
+		typedef typename allocator_type::pointer			pointer;
+		typedef typename allocator_type::const_pointer		const_pointer;
+		typedef pointer										iterator;
+		typedef const_pointer								const_iterator;
+
+		pointer			_begin;
+		pointer			_end;
+		pointer			_end_cap;
+		allocator_type	_alloc;
+
+		allocator_type&			__alloc();
+		const allocator_type&	__alloc() const;
+		pointer&				__end_cap();
+		const pointer&			__end_cap() const;
+
+		vector_base(allocator_type alloc = allocator_type());
+
+		void	_clear(void);
+		void	clear_all(void);
+		size_type	_capacity(void) const;
+
+		template <class iterator>
+		void	copy_range(pointer &start, iterator input_begin, iterator input_end
+						, typename ft::enable_if<!is_integral<iterator>::value_type, iterator>::type* = m_nullptr);
+		template <class iterator>
+		void	copy_limit_range(pointer &start, iterator input_begin, iterator input_end, size_type limit);
+		void	copy_range(pointer &start, size_type n, value_type val);
+		void	allocate_size(size_type n);
+		size_type	insert_choose_capacity(size_type curr_size, size_type curr_cap, size_type n);
+		void	_swap(pointer &a, pointer &b);
+	};
+
+	template < class T, class Alloc = std::allocator<T> >
+	class vector : private vector_base<T, Alloc>
+	{
+	public:
+		typedef T											value_type;
+		typedef Alloc										allocator_type;
+		typedef typename allocator_type::reference			reference;
+		typedef typename allocator_type::const_reference	const_reference;
+		typedef typename allocator_type::pointer			pointer;
+		typedef typename allocator_type::const_pointer		const_poiner;
+		typedef typename allocator_type::difference_type	difference_type;
+		typedef typename allocator_type::size_type			size_type;
+		typedef ft::vector_iterator<T>						iterator;
+		typedef ft::vector_iterator<const T>				const_iterator;
+		typedef ft::reverse_iterator<iterator>				reverse_iterator;
+		typedef ft::reverse_iterator<const_iterator>		const_reverse_iterator;
+
+		// Construct
+		explicit vector(const allocator_type& alloc = allocator_type())
+		: vector_base<T, allocator_type>(alloc) {};
+		explicit vector(size_type n, const value_type& val = value_type()
+						, const allocator_type& alloc = allocator_type());
+		template <class InputIterator>
+		vector(InputIterator first, InputIterator last
+			, const allocator_type& alloc = allocator_type()
+			, typename ft::enable_if<!is_integral<InputIterator>::value_type, InputIterator>::type* = m_nullptr);
+		vector(const vector& x) : vector_base<T, allocator_type>(x.__alloc());
+
+		// Destruct
+		~vector(void);
+
+		// Substitude Operator
+		vector&	operator=(const vector& x);
+
+		// Iterator
+		iterator				begin(void);
+		const_iterator			begin(void) const;
+		iterator				end(void);
+		const_iterator			end(void) const;
+		reverse_iterator		rbegin(void);
+		const_reverse_iterator	rbegin(void) const;
+		reverse_iterator		rend(void);
+		const_reverse_iterator	rend(void) const;
+
+		// Capacity
+		size_type		size(void) const;
+		size_type		max_size(void) const;
+		void			resize(size_type n, value_type val = value_type());
+		size_type		capacity(void) const;
+		bool			empty(void) const;
+		void			reserve(size_type n);
+
+		// Element Access
+		reference		operator[](size_type n);
+		const_reference	operator[](size_type n) const;
+		reference		at(size_type n);
+		const_reference	at(size_type n) const;
+		reference		front(void);
+		const_reference	front(void) const;
+		reference		back(void);
+		const_reference	back(void) const;
+
+		// Modifiers
+		template <class InputIterator>
+		void		assign(InputIterator first, InputIterator last
+						, typename ft::enable_if<!is_integral<InputIterator>::value_type, InputIterator>::type* = m_nullptr);
+		void		assign(size_type n, const value_type& val);
+		void		push_back(const value_type& val);
+		void		pop_back(void);
+		iterator	insert(iterator position, const value_type& val);
+		void		insert(iterator position, size_type n, const value_type& val);
+		template <class InputIterator>
+		void		insert(iterator position, InputIterator first, InputIterator last
+						, typename ft::enable_if<!is_integral<InputIterator>::value_type, InputIterator>::type* = m_nullptr);
+		iterator erase (iterator position);
+		iterator erase (iterator first, iterator last);
+		void		swap(vector& x);
+		void		clear(void);
+
+		// Allocator
+		allocator_type	get_allocator(void) const;
+	};
+
+	// Relational Operators
+	template <class T, class Alloc>
+	bool operator== (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+	template <class T, class Alloc>
+	bool operator!= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+	template <class T, class Alloc>
+	bool operator<  (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+	template <class T, class Alloc>
+	bool operator<= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+	template <class T, class Alloc>
+	bool operator>  (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+	template <class T, class Alloc>
+	bool operator>= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+	template <class T, class Alloc>
+	void swap (vector<T,Alloc>& x, vector<T,Alloc>& y);
+};
+*/
+
 # include <exception>
 # include <memory>
 # include "vector_iterator.hpp"
 # include "reverse_iterator.hpp"
-
-# define _NOEXCEPT throw()
 
 namespace ft
 {
@@ -46,10 +202,10 @@ namespace ft
 		pointer			_end_cap;
 		allocator_type	_alloc;
 
-		allocator_type&	__alloc() _NOEXCEPT { return (_alloc); };
-		const allocator_type&	__alloc() const _NOEXCEPT { return (_alloc); };
-		pointer&	__end_cap() _NOEXCEPT { return (_end_cap); };
-		const pointer&	__end_cap() const _NOEXCEPT { return (_end_cap); };
+		allocator_type&	__alloc() { return (_alloc); };
+		const allocator_type&	__alloc() const { return (_alloc); };
+		pointer&	__end_cap() { return (_end_cap); };
+		const pointer&	__end_cap() const { return (_end_cap); };
 
 		vector_base(allocator_type alloc = allocator_type())
 		: _begin(0), _end(0), _end_cap(0), _alloc(alloc) {};
