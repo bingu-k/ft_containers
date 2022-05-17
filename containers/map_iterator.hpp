@@ -128,19 +128,18 @@ namespace ft
 		{ return (x._elem == y._elem); };
 		friend bool	operator!=(const map_const_iterator& x, const map_const_iterator& y)
 		{ return (x._elem != y._elem); };
-		template <class, class> friend class tree_const_iterator;
+		template <class> friend class tree_const_iterator;
 	};
 
 	// tree_iterator
-	template <class N, class P>
-	class tree_const_iterator;
+	template <class> class tree_const_iterator;
 
-	template <class N, class P>
+	template <class N>
 	class tree_iterator
 	{
 	public:
-		typedef N												nodeptr;
-		typedef P												value_type;
+		typedef N												value_type;
+		typedef node<value_type>*								nodeptr;
 		typedef ft::bidirectional_iterator_tag					iterator_category;
 		typedef ft::iterator<iterator_category(), value_type>	iter;
 		typedef typename iter::pointer							pointer;
@@ -168,9 +167,9 @@ namespace ft
 		nodeptr	get_nodeptr(void) const { return (this->_elem); };
 		nodeptr	get_end(void) const { return (this->_end); };
 		reference	operator*() const
-		{ return (this->get_nodeptr()->_val); };
+		{ return (this->get_nodeptr()->get_val()); };
 		pointer		operator->() const
-		{ return (&(this->get_nodeptr()->_val)); };
+		{ return (this->get_nodeptr()->get_valptr()); };
 		tree_iterator&	operator++()
 		{
 			if (this->_elem->_right == this->_end)
@@ -225,18 +224,18 @@ namespace ft
 		{ return !(x == y); };
 	};
 
-	template <class N, class P>
+	template <class N>
 	class tree_const_iterator
 	{
 	public:
-		typedef N												nodeptr;
-		typedef const P											value_type;
+		typedef const N											value_type;
+		typedef node<N>*										nodeptr;
 		typedef ft::bidirectional_iterator_tag					iterator_category;
-		typedef ft::iterator<iterator_category(), P>			iter;
+		typedef ft::iterator<iterator_category(), value_type>	iter;
 		typedef typename iter::pointer							pointer;
 		typedef typename iter::reference						reference;
 		typedef typename iter::difference_type					difference_type;
-		typedef tree_iterator<nodeptr, value_type>				non_const_tree_iter;
+		typedef tree_iterator<N>								non_const_tree_iter;
 	private:
 		nodeptr	_elem;
 		nodeptr	_end;
@@ -258,15 +257,12 @@ namespace ft
 		};
 		~tree_const_iterator() {};
 
-		// ft::tree_iterator<nodeptr, value_type>	remove_const() const
-		// { return (const_cast<typename ft::tree_iterator<nodeptr, value_type>::()>); };
-
 		nodeptr	get_nodeptr(void) const { return (this->_elem); };
 		nodeptr	get_end(void) const { return (this->_end); };
 		reference	operator*() const
-		{ return (this->get_nodeptr()->_val); };
+		{ return (this->get_nodeptr()->get_val()); };
 		pointer		operator->() const
-		{ return (&(this->get_nodeptr()->_val)); };
+		{ return (this->get_nodeptr()->get_valptr()); };
 		tree_const_iterator&	operator++()
 		{
 			if (this->_elem->_right == this->_end)

@@ -298,19 +298,25 @@ namespace ft
 	template <class T>
 	struct node
 	{
-		T			_val;
-		node_color	_color;
-		node<T>*	_parent;
-		node<T>*	_left;
-		node<T>*	_right;
+		typedef	T			value_type;
+		typedef const T		const_value_type;
+		value_type			_val;
+		node_color			_color;
+		node<value_type>*	_parent;
+		node<value_type>*	_left;
+		node<value_type>*	_right;
 		
-		node(T val = T()) : _val(val)
+		node(value_type val = value_type()) : _val(val)
 		{
 			_color = Red;
 			_parent = m_nullptr;
 			_left = m_nullptr;
 			_right = m_nullptr;
 		};
+		value_type*			get_valptr(void)		{ return (&(this->_val)); };
+		const_value_type*	get_valptr(void) const	{ return (&(this->_val)); };
+		value_type&			get_val(void)		{ return (this->_val); };
+		const_value_type&	get_val(void) const	{ return (this->_val); };
 	};
 	template <class nodeptr>
 	bool	is_nil(nodeptr node)
@@ -320,7 +326,5 @@ namespace ft
 		return (false);
 	};
 }
-
-#include <__tree>
 
 #endif

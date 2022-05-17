@@ -19,9 +19,8 @@ namespace ft
 		typedef typename node_allocator_type::size_type			size_type;
 		typedef node<value_type>								_node;
 		typedef node<value_type>*								nodeptr;
-		typedef node<const value_type>*							const_nodeptr;
-		typedef tree_iterator<nodeptr, value_type>				iterator;
-		typedef tree_const_iterator<const_nodeptr, value_type>	const_iterator;
+		typedef tree_iterator<value_type>						iterator;
+		typedef tree_const_iterator<value_type>					const_iterator;
 		typedef typename iterator::difference_type				difference_type;
 
 	private:
@@ -135,7 +134,7 @@ namespace ft
 			}
 			return (ft::pair<iterator,bool>(res, false));
 		};
-		iterator	insert_pos(iterator	pos, const value_type& val)
+		iterator	insert_pos(const_iterator pos, const value_type& val)
 		{
 			iterator	res = find(val);
 			if (res == end())			// 중복 아님
@@ -182,7 +181,7 @@ namespace ft
 			}
 			return (0);
 		};
-		void		remove_pos(iterator pos)
+		void		remove_pos(const_iterator pos)
 		{
 			iterator	res = find(*pos);
 			if (res != this->end())
@@ -193,9 +192,9 @@ namespace ft
 				remove_node(deleted_node);
 			}
 		};
-		void		remove_multi(iterator first, iterator last)
+		void		remove_multi(const_iterator first, const_iterator last)
 		{
-			iterator	start = first;
+			const_iterator	start = first;
 			nodeptr		deleted_node = m_nullptr;
 			while (start != last)
 			{
