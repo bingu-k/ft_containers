@@ -1,7 +1,7 @@
 #include "tester.hpp"
 #include <time.h>
 
-#define TEST_NAME	ft
+#define TEST_NAME	std
 
 static void constructors(void)
 {

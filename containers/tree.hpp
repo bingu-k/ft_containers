@@ -49,7 +49,8 @@ namespace ft
 		tree&	operator=(const tree& origin)
 		{
 			this->all_clear();
-			remove_node(this->_end);
+			this->_node_alloc.destroy(this->_end);
+			this->_node_alloc.deallocate(this->_end, 1);
 			this->_comp = origin.comp();
 			this->_node_alloc = origin.node_alloc();
 			this->_end = make_nil_node();
