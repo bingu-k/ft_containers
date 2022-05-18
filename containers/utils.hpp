@@ -4,6 +4,7 @@
 # include <cstddef>
 # include <functional>
 # include <memory>
+# include <utility>
 # include "iterator.hpp"
 
 namespace ft
@@ -223,8 +224,11 @@ namespace ft
 			pair(void) : first(), second() {};
 			pair(first_type const& a, second_type const& b)
 			: first(a), second(b) {};
+			pair(const pair<T1, T2>& pr) : first(pr.first), second(pr.second) {};
 			template <class U, class V>
 			pair(const pair<U, V>& pr) : first(pr.first), second(pr.second) {};
+			template <class U, class V>
+			pair(const std::pair<U, V>& pr) : first(pr.first), second(pr.second) {};
 
 			// Assign Operator
 			pair&	operator=(pair const& pr)
