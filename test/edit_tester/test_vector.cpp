@@ -293,5 +293,6 @@ int	main(void)
 	clock_t end = clock();
 	double	result = static_cast<double>(end - start);
 	std::cout << "Total time\t: " << result << " ms" << std::endl;
+	system("leaks a.out");
 	return(0);
 }
